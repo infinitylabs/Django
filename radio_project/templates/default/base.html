@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}R/a/dio{% endblock title %}</title>
+    <meta charset="utf-8" />
+    <meta name="description" content="We cater to all of your Anime/Japan-related music tastes. Just point your favorite music player at our stream link." />
+    <meta name="keywords" content="japan,music,anime,radio,r/a/dio,r-a-dio,stream,anison,日本,アニソン" />
+    <link href="/favicon.ico" type="image/vnd.microsoft.icon" rel="shortcut icon">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.jplayer.min.js"></script>
+    <script>window.swfpath = "/js/Jplayer.swf";</script>
+    {% block javascript %}
+    <script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+    <script src="/js/bootstrap-plugins.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <script src="/js/bootstrap-typeahead.js"></script>
+    {% endblock javascript %}
+    {% block stylesheets %}
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+    {% endblock stylesheets %}
+</head>
+<body>
+    {% block webplayer %}
+    <div id="player"></div>
+    {% endblock webplayer %}
+    {% block topbar %}
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="container">
+                <h3><a href="#">R/a/dio</a></h3>
+                <ul class="nav">
+                    <li class="go active" id="p-home">
+                        <a href="/">Home</a>
+                    </li>
+                    <li class="go" id="p-news">
+                        <a href="/news/">News</a>
+                    </li>
+                    <li class="go" id="p-lastplayed">
+                        <a href="/lastplayed/">Last Played</a>
+                    </li>
+                    <li class="go" id="p-queue">
+                        <a href="/queue/">Queue</a>
+                    </li>
+                    <li class="go" id="p-favorites">
+                        <a href="/favorites/">Favorites</a>
+                    </li>
+                    <li class="go" id="p-submit">
+                        <a href="/submit/">Submit track</a>
+                    </li>
+                    <li class="go" id="p-staff">
+                        <a href="/staff/">Staff</a>
+                    </li>
+                    <li class="go" id="p-irc">
+                        <a href="/irc/">IRC</a>
+                    </li>
+                    <li class="go" id="p-stats">
+                        <a href="/stats/">Stats</a>
+                    </li>
+                    <li class="go" id="p-search">
+                        <a href="/search/">Request</a>
+                    </li>
+                </ul>
+                <form id="search" class="pull-right" action="/search/">
+                    <input class="search" type="text" name="query" autocomplete="off" placeholder="Search library">
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endblock topbar %}
+<noscript class="javascript">
+    <div class="container">
+        <div class="alert-message danger fade in error-message">
+            <strong>You should turn on javascript to get the full functionality of this web page.</strong>
+        </div>
+    </div>
+</noscript>
+<div class="container error-div" style="display: none;">
+    <div class="row">
+        <div class="span12 offset2">
+        </div>
+    </div>
+</div>
+<div class="container page" id="page-p-home">
+   {% block content %}
+   
+   {% endblock content %}
+</div>
+<div id="info-footer" style="text-align: center; font-size: 80%;">
+    <a href="http://code.google.com/p/radio-backend-hanyuu/">Code Repository</a>
+</div>
+</body>

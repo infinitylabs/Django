@@ -1,0 +1,31 @@
+{% extends "default/base.html" %}
+
+{% block content %}
+{% if queue %}
+<div class="alert-message info" style="display: none;">
+    <p>There is currently no queue available. fuck</p>
+</div>
+<div class="row">
+{% else %}
+<div class="alert-message info">
+    <p>There is currently no queue available. fuck2</p>
+</div>
+<div class="row" style="display: none;">
+{% endif %}
+    <div class="span16">
+        <table class="zebra-striped">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th class="head">Track</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in queue %}
+                    <tr><th>{{ item.time }}</th><td>{{ item.song.track.metadata }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
