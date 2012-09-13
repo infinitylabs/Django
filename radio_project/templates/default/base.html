@@ -1,3 +1,5 @@
+{% load static %}
+{% get_static_prefix as STATIC %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,20 +7,26 @@
     <meta charset="utf-8" />
     <meta name="description" content="We cater to all of your Anime/Japan-related music tastes. Just point your favorite music player at our stream link." />
     <meta name="keywords" content="japan,music,anime,radio,r/a/dio,r-a-dio,stream,anison,日本,アニソン" />
-    <link href="/favicon.ico" type="image/vnd.microsoft.icon" rel="shortcut icon">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/jquery.jplayer.min.js"></script>
-    <script>window.swfpath = "/js/Jplayer.swf";</script>
+    <link href="{{ STATIC }}favicon.ico" type="image/vnd.microsoft.icon" rel="shortcut icon">
+
+    <script>window.swfpath = "{{ STATIC }}js/Jplayer.swf";</script>
+    {% block jquery %}
+    <script src="{{ STATIC }}js/jquery.min.js"></script>
+    <script src="{{ STATIC }}js/jquery.jplayer.min.js"></script>
+    <script src="{{ STATIC }}js/jquery.form.js"></script>
+    {% endblock jquery %}
+    {% block bootstrap %}
+    <script src="{{ STATIC }}js/bootstrap-typeahead.js"></script>
+    <script src="{{ STATIC }}js/bootstrap-plugins.js"></script>
+    <link rel="stylesheet" href="{{ STATIC }}css/bootstrap.min.css" />
+    {% endblock bootstrap %}
     {% block javascript %}
     <script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
-    <script src="/js/bootstrap-plugins.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/jquery.form.js"></script>
-    <script src="/js/bootstrap-typeahead.js"></script>
+    <script src="{{ STATIC }}js/main.js"></script>
     {% endblock javascript %}
     {% block stylesheets %}
-    <link rel="stylesheet" href="/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/index.css" />
+    
+    <link rel="stylesheet" href="{{ STATIC }}css/index.css" />
     {% endblock stylesheets %}
 </head>
 <body>
