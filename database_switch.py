@@ -81,15 +81,15 @@ def move_data(host, port, username, password, old_db):
             for userid, djid in links:
                 # Get djid info
                 old_cur.execute("""SELECT djname, djtext, djimage, 
-                                visible, priority, css FROM djs WHERE id=%s;""",
+                                visible, priority FROM djs WHERE id=%s;""",
                                 (djid,))
                 # Put info into new djs table
-                for name, description, image, visible, priority, css in old_cur:
+                for name, description, image, visible, priority in old_cur:
                     new_cur.execute("""INSERT INTO djs (id, name, description, 
-                    image, visible, priority, user, css) VALUES (%s, %s, %s,
-                    %s, %s, %s, %s, %s);""", (djid, name, description,
+                    image, visible, priority, user) VALUES (%s, %s, %s,
+                    %s, %s, %s, %s);""", (djid, name, description,
                                               image, visible, priority,
-                                              userid, css))
+                                              userid))
     
     # News
     logging.info("Working on: news")
@@ -202,7 +202,7 @@ def move_data(host, port, username, password, old_db):
             return new_cur.lastrowid
         except mysql.IntegrityError:
             cursor.execute("""SELECT id FROM track
-             WHERE hash=SHA1(%s);""", (meta,))
+             WHERE hash=SHA1(LOWER(%s));""", (meta,))
             for track_id, in cursor:
                 return track_id
     def add_album(cursor, album):
@@ -218,7 +218,7 @@ def move_data(host, port, username, password, old_db):
                 return album_id
     def add_song(cursor, metadata, tid):
         cursor.execute("""INSERT INTO songs (hash, track_id) VALUES
-                (SHA1(%s), %s) ON DUPLICATE KEY UPDATE
+                (SHA1(LOWER(%s)), %s) ON DUPLICATE KEY UPDATE
                  id=LAST_INSERT_ID(id), track_id=VALUES(track_id);""", (metadata, tid))
         return cursor.lastrowid
     def link_track_album(cursor, tid, aid):
