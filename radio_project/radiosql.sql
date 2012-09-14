@@ -5,21 +5,17 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 CREATE SCHEMA IF NOT EXISTS `radio_main` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `radio_main` ;
 
--- -----------------------------------------------------
--- Table `radio_main`.`users`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `radio_main`.`users` ;
-
-CREATE  TABLE IF NOT EXISTS `radio_main`.`users` (
-  `id` INT(12) NOT NULL AUTO_INCREMENT ,
-  `username` VARCHAR(45) NOT NULL ,
-  `password` VARCHAR(45) NOT NULL ,
-  `privileges` TINYINT(2) NULL DEFAULT 0 ,
-  PRIMARY KEY (`id`) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_unicode_ci;
-
+-- Altering tables at top so we can cry when you don't LISTEN
+ALTER TABLE auth_group ENGINE=InnoDB;
+ALTER TABLE auth_group_permissions ENGINE=InnoDB;
+ALTER TABLE auth_message ENGINE=InnoDB;
+ALTER TABLE auth_permission ENGINE=InnoDB;
+ALTER TABLE auth_user ENGINE=InnoDB;
+ALTER TABLE auth_user_groups ENGINE=InnoDB;
+ALTER TABLE auth_user_user_permissions ENGINE=InnoDB;
+ALTER TABLE django_content_type ENGINE=InnoDB;
+ALTER TABLE django_session ENGINE=InnoDB;
+ALTER TABLE django_site ENGINE=InnoDB;
 
 -- -----------------------------------------------------
 -- Table `radio_main`.`djs`
@@ -36,16 +32,16 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`djs` (
   `user` INT(12) NOT NULL ,
   `theme` VARCHAR(60) NOT NULL DEFAULT 'default' ,
   PRIMARY KEY (`id`, `user`) ,
-  CONSTRAINT `fk_djs_users`
+  CONSTRAINT `fk_djs_auth_user`
     FOREIGN KEY (`user` )
-    REFERENCES `radio_main`.`users` (`id` )
+    REFERENCES `radio_main`.`auth_user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_djs_users` ON `radio_main`.`djs` (`user` ASC) ;
+CREATE INDEX `fk_djs_auth_user` ON `radio_main`.`djs` (`user` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -61,16 +57,16 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`news` (
   `commenting` TINYINT(1) NOT NULL DEFAULT 1 ,
   `poster` INT(12) NOT NULL ,
   PRIMARY KEY (`id`, `poster`) ,
-  CONSTRAINT `fk_news_users1`
+  CONSTRAINT `fk_news_auth_user1`
     FOREIGN KEY (`poster` )
-    REFERENCES `radio_main`.`users` (`id` )
+    REFERENCES `radio_main`.`auth_user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_news_users1` ON `radio_main`.`news` (`poster` ASC) ;
+CREATE INDEX `fk_news_auth_user1` ON `radio_main`.`news` (`poster` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -92,9 +88,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`news_comments` (
     REFERENCES `radio_main`.`news` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_news_comments_users1`
+  CONSTRAINT `fk_news_comments_auth_user1`
     FOREIGN KEY (`poster` )
-    REFERENCES `radio_main`.`users` (`id` )
+    REFERENCES `radio_main`.`auth_user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -341,9 +337,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`collection_editors` (
   `time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ,
   `collection_id` INT(12) NOT NULL ,
   PRIMARY KEY (`id`, `collection_id`, `users_id`) ,
-  CONSTRAINT `fk_collection_editors_users1`
+  CONSTRAINT `fk_collection_editors_auth_user1`
     FOREIGN KEY (`users_id` )
-    REFERENCES `radio_main`.`users` (`id` )
+    REFERENCES `radio_main`.`auth_user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_collection_editors_collection1`
@@ -355,7 +351,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_collection_editors_users1` ON `radio_main`.`collection_editors` (`users_id` ASC) ;
+CREATE INDEX `fk_collection_editors_auth_user1` ON `radio_main`.`collection_editors` (`users_id` ASC) ;
 
 CREATE INDEX `fk_collection_editors_collection1` ON `radio_main`.`collection_editors` (`collection_id` ASC) ;
 

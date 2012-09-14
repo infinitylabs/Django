@@ -31,25 +31,53 @@ def jsonp(f): # https://gist.github.com/871954
                 
     return jsonp_wrapper
 
-from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
-def pagination(obj, page_size=20, page=1):
-    """Uses: https://docs.djangoproject.com/en/1.3/topics/pagination/
+from django.core.paginator import InvalidPage, Paginator as _Paginator
+class Paginator(_Paginator):
+    def get_context(self, page, range_gap=5):
+        try:
+            page = int(page)
+        except (ValueError, TypeError) as err:
+            raise InvalidPage, err
+        
+        paginator = self.page(page)
+        
+        if page > 5:
+            start = page - range_gap
+        else:
+            start = 1
+            
+        if page < self.num_pages - range_gap:
+            end = page + range_gap + 1
+        else:
+            end = self.num_pages + 1
+            
+        context = {
+           "page_range": range(start, end),
+           "objects": paginator.object_list,
+           "num_pages": self.num_pages,
+           "page": page,
+           "has_pages": self.num_pages > 1,
+           "has_previous": paginator.has_previous(),
+           "has_next": paginator.has_next(),
+           "previous_page": paginator.previous_page_number(),
+           "next_page": paginator.next_page_number(),
+           "is_first": page == 1,
+           "is_last": page == self.num_pages,
+           }
+        return context
     
-    Paginator for 'obj' returns the items on the page requested where:
-        
-        obj = Object to paginate
-        page_size = Items on a single page
-        page = The page to retrieve
-        
-        Usage:
-            >>> pagination([1, 2, 3, 4, 5, 6], page_size=2, page=2)
-            [3, 4]
+class Link(object):
+    """Simple class that collects the multiple objects into it
+    Does not accept positional arguments
+    
+    Usage:
+        >>> l = Link(magic="World", hello="Hello")
+        >>> l.magic
+        "World"
+        >>> l.hello
+        "Hello"
     """
-    paginator = Paginator(obj, page_size)
-    try:
-        items = paginator.page(page)
-    except PageNotAnInteger:
-        items = paginator.page(1)
-    except EmptyPage:
-        items = paginator.page(paginator.num_pages)
-    return items
+    def __init__(self, **kwargs):
+        super(Link, self).__init__()
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)

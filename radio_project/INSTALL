@@ -1,0 +1,22 @@
+﻿How to install the r/a/dio environment
+
+Requirements: # Many others I didn't look at doohohoho
+Python 2.7
+Django 1.3
+MySQL 5.1+
+
+Create the mysql database:
+
+    CREATE DATABASE IF NOT EXISTS `radio_main` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+
+Sync your django project without adding the radio_project application
+
+    python manage.py syncdb
+    
+Run the database creation script supplied, this is done due to django limitations
+
+    python database.py
+    
+Add the radio_project application to django, now sync again
+
+    python manage.py syncdb

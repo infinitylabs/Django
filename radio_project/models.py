@@ -9,17 +9,8 @@
 
 from __future__ import unicode_literals
 from django.db import models
+from django.contrib.auth.models import User
 
-class Users(models.Model):
-    id = models.IntegerField(primary_key=True)
-    username = models.CharField(max_length=45)
-    password = models.CharField(max_length=45)
-    privileges = models.IntegerField(null=True, blank=True)
-    class Meta:
-        db_table = u'users'
-    def __unicode__(self):
-        return self.username
-        
 class Djs(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=45)
@@ -27,7 +18,7 @@ class Djs(models.Model):
     image = models.TextField(blank=True)
     visible = models.IntegerField()
     priority = models.IntegerField()
-    user = models.ForeignKey(Users, db_column='user')
+    user = models.ForeignKey(User, db_column='user')
     theme = models.CharField(max_length=60)
     class Meta:
         db_table = u'djs'
@@ -40,7 +31,7 @@ class News(models.Model):
     time = models.DateTimeField()
     text = models.TextField()
     commenting = models.IntegerField()
-    poster = models.ForeignKey(Users, db_column='poster')
+    poster = models.ForeignKey(User, db_column='poster')
     class Meta:
         db_table = u'news'
     def __unicode__(self):
@@ -52,7 +43,7 @@ class NewsComments(models.Model):
     nickname = models.CharField(max_length=100, blank=True)
     text = models.TextField()
     mail = models.CharField(max_length=200, blank=True)
-    poster = models.ForeignKey(Users, null=True, db_column='poster', blank=True)
+    poster = models.ForeignKey(User, null=True, db_column='poster', blank=True)
     time = models.DateTimeField()
     class Meta:
         db_table = u'news_comments'
@@ -103,7 +94,7 @@ class Collection(models.Model):
 
 class CollectionEditors(models.Model):
     id = models.IntegerField(primary_key=True)
-    users = models.ForeignKey(Users)
+    users = models.ForeignKey(User)
     action = models.CharField(max_length=45, blank=True)
     time = models.DateTimeField(null=True, blank=True)
     collection = models.ForeignKey(Collection)
@@ -177,7 +168,7 @@ class Faves(models.Model):
     class Meta:
         db_table = u'faves'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
         
 class Played(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -187,7 +178,7 @@ class Played(models.Model):
     class Meta:
         db_table = u'played'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
         
 class Queue(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -197,7 +188,7 @@ class Queue(models.Model):
     class Meta:
         db_table = u'queue'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
         
 class Relays(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -226,7 +217,7 @@ class Requests(models.Model):
     class Meta:
         db_table = u'requests'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
         
 class Streamstatus(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -238,7 +229,7 @@ class Streamstatus(models.Model):
     class Meta:
         db_table = u'streamstatus'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
         
 class TrackHasAlbum(models.Model):
     track = models.ForeignKey(Track)
@@ -260,6 +251,6 @@ class Uploads(models.Model):
     class Meta:
         db_table = u'uploads'
     def __unicode__(self):
-        return self.id
+        return str(self.id)
 
 
