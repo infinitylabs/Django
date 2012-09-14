@@ -173,7 +173,7 @@ def move_data(host, port, username, password, old_db):
             for play in players:
                 try:
                     new_cur.execute(query, play)
-                except mysql.Warning:
+                except mysql.Warning, mysql.DataError:
                     play = (play[0], play[0][:200])
                     new_cur.execute(query, play)
             # prepare iterator for listener
