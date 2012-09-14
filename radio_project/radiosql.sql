@@ -41,7 +41,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_djs_auth_user` ON `radio_main`.`djs` (`user` ASC) ;
+-- CREATE INDEX `fk_djs_auth_user` ON `radio_main`.`djs` (`user` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -66,7 +66,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_news_auth_user1` ON `radio_main`.`news` (`poster` ASC) ;
+-- CREATE INDEX `fk_news_auth_user1` ON `radio_main`.`news` (`poster` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -97,9 +97,9 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_news_comments_news1` ON `radio_main`.`news_comments` (`news_id` ASC) ;
+-- CREATE INDEX `fk_news_comments_news1` ON `radio_main`.`news_comments` (`news_id` ASC) ;
 
-CREATE INDEX `fk_news_comments_users1` ON `radio_main`.`news_comments` (`poster` ASC) ;
+-- CREATE INDEX `fk_news_comments_users1` ON `radio_main`.`news_comments` (`poster` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -116,7 +116,7 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`track` (
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED;
 
-CREATE UNIQUE INDEX `hash_UNIQUE` ON `radio_main`.`track` (`hash` ASC) ;
+-- CREATE UNIQUE INDEX `hash_UNIQUE` ON `radio_main`.`track` (`hash` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -140,7 +140,7 @@ COLLATE = utf8_unicode_ci;
 
 CREATE UNIQUE INDEX `hash_UNIQUE` ON `radio_main`.`songs` (`hash` ASC) ;
 
-CREATE INDEX `fk_songs_track1` ON `radio_main`.`songs` (`track_id` ASC) ;
+-- CREATE INDEX `fk_songs_track1` ON `radio_main`.`songs` (`track_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -170,7 +170,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_collection_songs1` ON `radio_main`.`collection` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_collection_songs1` ON `radio_main`.`collection` (`songs_id` ASC) ;
 
 CREATE UNIQUE INDEX `songs_id_UNIQUE` ON `radio_main`.`collection` (`songs_id` ASC) ;
 
@@ -222,7 +222,7 @@ ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `nick_UNIQUE` ON `radio_main`.`nicknames` (`nick` ASC) ;
 
-CREATE INDEX `fk_nicknames_hostnames1` ON `radio_main`.`nicknames` (`hostnames_id` ASC) ;
+-- CREATE INDEX `fk_nicknames_hostnames1` ON `radio_main`.`nicknames` (`hostnames_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -250,11 +250,11 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`listeners` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_listeners_players1` ON `radio_main`.`listeners` (`players_id` ASC) ;
+-- CREATE INDEX `fk_listeners_players1` ON `radio_main`.`listeners` (`players_id` ASC) ;
 
 CREATE UNIQUE INDEX `ip_UNIQUE` ON `radio_main`.`listeners` (`ip` ASC) ;
 
-CREATE INDEX `fk_listeners_nicknames1` ON `radio_main`.`listeners` (`nicknames_id` ASC) ;
+-- CREATE INDEX `fk_listeners_nicknames1` ON `radio_main`.`listeners` (`nicknames_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -288,11 +288,11 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_requests_songs1` ON `radio_main`.`requests` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_requests_songs1` ON `radio_main`.`requests` (`songs_id` ASC) ;
 
-CREATE INDEX `fk_requests_listeners1` ON `radio_main`.`requests` (`listeners_id` ASC) ;
+-- CREATE INDEX `fk_requests_listeners1` ON `radio_main`.`requests` (`listeners_id` ASC) ;
 
-CREATE INDEX `fk_requests_hostnames1` ON `radio_main`.`requests` (`hostnames_id` ASC) ;
+-- CREATE INDEX `fk_requests_hostnames1` ON `radio_main`.`requests` (`hostnames_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -320,9 +320,9 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_lastplayed_songs1` ON `radio_main`.`played` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_lastplayed_songs1` ON `radio_main`.`played` (`songs_id` ASC) ;
 
-CREATE INDEX `fk_lastplayed_djs1` ON `radio_main`.`played` (`djs_id` ASC) ;
+-- CREATE INDEX `fk_lastplayed_djs1` ON `radio_main`.`played` (`djs_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -351,9 +351,9 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_collection_editors_auth_user1` ON `radio_main`.`collection_editors` (`users_id` ASC) ;
+-- CREATE INDEX `fk_collection_editors_auth_user1` ON `radio_main`.`collection_editors` (`users_id` ASC) ;
 
-CREATE INDEX `fk_collection_editors_collection1` ON `radio_main`.`collection_editors` (`collection_id` ASC) ;
+-- CREATE INDEX `fk_collection_editors_collection1` ON `radio_main`.`collection_editors` (`collection_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -379,9 +379,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`faves` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_faves_songs1` ON `radio_main`.`faves` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_faves_songs1` ON `radio_main`.`faves` (`songs_id` ASC) ;
 
-CREATE INDEX `fk_faves_nicknames1` ON `radio_main`.`faves` (`nicknames_id` ASC) ;
+-- CREATE INDEX `fk_faves_nicknames1` ON `radio_main`.`faves` (`nicknames_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -402,7 +402,7 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`queue` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_queue_songs1` ON `radio_main`.`queue` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_queue_songs1` ON `radio_main`.`queue` (`songs_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -421,7 +421,7 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`current_listeners` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_current_listeners_listeners1` ON `radio_main`.`current_listeners` (`listeners_id` ASC) ;
+-- CREATE INDEX `fk_current_listeners_listeners1` ON `radio_main`.`current_listeners` (`listeners_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -449,9 +449,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`streamstatus` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_streamstatus_songs1` ON `radio_main`.`streamstatus` (`songs_id` ASC) ;
+-- CREATE INDEX `fk_streamstatus_songs1` ON `radio_main`.`streamstatus` (`songs_id` ASC) ;
 
-CREATE INDEX `fk_streamstatus_djs1` ON `radio_main`.`streamstatus` (`djs_id` ASC) ;
+-- CREATE INDEX `fk_streamstatus_djs1` ON `radio_main`.`streamstatus` (`djs_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -477,9 +477,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`uploads` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_uploads_listeners1` ON `radio_main`.`uploads` (`listeners_id` ASC) ;
+-- CREATE INDEX `fk_uploads_listeners1` ON `radio_main`.`uploads` (`listeners_id` ASC) ;
 
-CREATE INDEX `fk_uploads_collection1` ON `radio_main`.`uploads` (`collection_id` ASC) ;
+-- CREATE INDEX `fk_uploads_collection1` ON `radio_main`.`uploads` (`collection_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -517,9 +517,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`track_has_album` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_track_has_album_album1` ON `radio_main`.`track_has_album` (`album_id` ASC) ;
+-- CREATE INDEX `fk_track_has_album_album1` ON `radio_main`.`track_has_album` (`album_id` ASC) ;
 
-CREATE INDEX `fk_track_has_album_track1` ON `radio_main`.`track_has_album` (`track_id` ASC) ;
+-- CREATE INDEX `fk_track_has_album_track1` ON `radio_main`.`track_has_album` (`track_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -557,9 +557,9 @@ CREATE  TABLE IF NOT EXISTS `radio_main`.`collection_has_tags` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_collection_has_tags_tags1` ON `radio_main`.`collection_has_tags` (`tags_id` ASC) ;
+-- CREATE INDEX `fk_collection_has_tags_tags1` ON `radio_main`.`collection_has_tags` (`tags_id` ASC) ;
 
-CREATE INDEX `fk_collection_has_tags_collection1` ON `radio_main`.`collection_has_tags` (`collection_id` ASC) ;
+-- CREATE INDEX `fk_collection_has_tags_collection1` ON `radio_main`.`collection_has_tags` (`collection_id` ASC) ;
 
 
 -- -----------------------------------------------------
