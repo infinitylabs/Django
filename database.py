@@ -173,7 +173,7 @@ def move_data(host, port, username, password, old_db):
             for play in players:
                 try:
                     new_cur.execute(query, play)
-                except mysql.Warning, mysql.DataError:
+                except:
                     play = (play[0], play[0][:200])
                     new_cur.execute(query, play)
             # prepare iterator for listener
@@ -246,8 +246,11 @@ def move_data(host, port, username, password, old_db):
                  id=LAST_INSERT_ID(id), track_id=VALUES(track_id);""", (metadata, tid))
         return cursor.lastrowid
     def link_track_album(cursor, tid, aid):
-        cursor.execute("""INSERT INTO track_has_album (track_id, album_id)
-        VALUES (%s, %s);""", (tid, aid))
+        try:
+            cursor.execute("""INSERT INTO track_has_album (track_id, album_id)
+            VALUES (%s, %s);""", (tid, aid))
+        except mysql.IntegrityError:
+            logging.warning("Duplicate entry ignored")
     def get_user_id(cursor, username):
         if not username:
             username = "Unknown"
