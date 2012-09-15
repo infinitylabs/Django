@@ -22,7 +22,7 @@
             </thead>
             <tbody>
                 {% for item in queue %}
-                    <tr><th>{{ item.time }}</th><td>{{ item.song.track.metadata }}</td></tr>
+                    <tr><th>{{ item.time }}</th><td>{{ item.songs.track.metadata }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

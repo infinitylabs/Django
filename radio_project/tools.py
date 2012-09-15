@@ -1,4 +1,13 @@
 """Various tool found through our journey!"""
+from django.http import HttpResponse
+from functools import wraps
+import json
+def json_wrap(f):
+    @wraps(f)
+    def json_wrapper(request, *args, **kwargs):
+        data = f(request, *args, **kwargs)
+        return HttpResponse(json.dumps(data), content_type="application/json")
+    return json_wrapper
 
 def jsonp(f): # https://gist.github.com/871954
     """Wrap a json response in a callback, and set the mimetype (Content-Type) header accordingly
@@ -70,6 +79,11 @@ class Link(object):
     """Simple class that collects the multiple objects into it
     Does not accept positional arguments
     
+    NOTE ABOUT __nonzero__:
+        The current one loops over all the items linked, and checks their
+        boolean value. If any of them return True the whole Link object will
+        be seen as True.
+        
     Usage:
         >>> l = Link(magic="World", hello="Hello")
         >>> l.magic
@@ -79,5 +93,12 @@ class Link(object):
     """
     def __init__(self, **kwargs):
         super(Link, self).__init__()
+        self._items = []
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
+            self._items.append(value)
+    def __nonzero__(self):
+        for items in self._items:
+            if items:
+                return True
+        return False

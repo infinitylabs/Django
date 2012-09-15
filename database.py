@@ -4,7 +4,6 @@ import sys
 from subprocess import STDOUT, Popen
 import MySQLdb as mysql
 import MySQLdb.cursors as cursors
-import os
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,53 +58,39 @@ def move_data(host, port, username, password, old_db):
     options_new.update({"db": "radio_main"})
     
     # Users
-    import settings
-    os.environ['DJANGO_SETTINGS_MODULE'] = "settings"
-    from django.contrib.auth.models import Group, User
-    # Create the groups we want
-    for groupname in ["Database", "Accepter", "DJ", "Newsposter", "Admin"]:
-        group, created = Group.objects.get_or_create(name=groupname)
-        group.save()
-    gdict = {1: Group.objects.get(name="Accepter"),
-             2: Group.objects.get(name="DJ"),
-             3: Group.objects.get(name="Newsposter"),
-             4: Group.objects.get(name="Admin")}
     logging.info("Working on: users")
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
+        with Cursor(options_new) as new_cur:
             # Retrieve old fields
             old_cur.execute("SELECT user, pass, privileges FROM users ORDER BY id ASC;")
             
             old_data = [("Unknown", "Empty", 0)] + list(old_cur)
             # Create our insert query
-            for name, pwd, privileges in old_data:
-                try:
-                    user = User.objects.get(username=name)
-                except:
-                    user = User.objects.create_user(name, "fake@email.com")
-                if gdict.get(privileges, None):
-                    user.groups.add(gdict.get(privileges))
-                user.save()
+            query = """INSERT INTO users (username, password, privileges)
+            VALUES (%s, %s, %s)"""
+            new_cur.executemany(query, old_data)
     # DJs
     logging.info("Working on: djs")
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
         with Cursor(options_new) as new_cur:
             # retrieve old djids from old users
-            old_cur.execute("SELECT user, djid FROM users ORDER BY id ASC;")
+            old_cur.execute("SELECT djid FROM users ORDER BY id ASC;")
             links = []
-            for user, djid in old_cur:
-                links.append((User.objects.get(username=user).id, djid))
+            for userid, rest in enumerate(old_cur):
+                links.append((userid+2, rest[0]))
             for userid, djid in links:
                 # Get djid info
                 old_cur.execute("""SELECT djname, djtext, djimage, 
                                 visible, priority FROM djs WHERE id=%s;""",
                                 (djid,))
-                # Put info into new djs table 
+                # Put info into new djs table
                 for name, description, image, visible, priority in old_cur:
                     new_cur.execute("""INSERT INTO djs (id, name, description, 
                     image, visible, priority, user) VALUES (%s, %s, %s,
                     %s, %s, %s, %s);""", (djid, name, description,
                                               image, visible, priority,
                                               userid))
+    
     # News
     logging.info("Working on: news")
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
@@ -136,7 +121,7 @@ def move_data(host, port, username, password, old_db):
                 if login == '':
                     old_data.append((nid, header, text, mail, None, time))
                 else:
-                    new_cur.execute("SELECT id FROM auth_user WHERE username=%s;", (login,))
+                    new_cur.execute("SELECT id FROM users WHERE username=%s;", (login,))
                     for poster, in new_cur:
                         old_data.append((nid, header, text, mail, poster, time))
             # lovely query
@@ -170,12 +155,8 @@ def move_data(host, port, username, password, old_db):
                 players.append((useragent_to_player(player), player))
             query = """INSERT INTO players (name, useragent) VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE name=VALUES(name);"""
-            for play in players:
-                try:
-                    new_cur.execute(query, play)
-                except:
-                    play = (play[0], play[0][:200])
-                    new_cur.execute(query, play)
+            new_cur.executemany(query, players)
+            
             # prepare iterator for listener
             listeners = []
             for ip, lastset, player in old_data:
@@ -188,12 +169,7 @@ def move_data(host, port, username, password, old_db):
             last_seen, nicknames_id) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE
             KEY UPDATE last_seen=VALUES(last_seen);"""
             # Add all of them to listeners
-            for l in listeners:
-                try:
-                    new_cur.execute(query, l)
-                except:
-                    print l
-            #new_cur.executemany(query, listeners)
+            new_cur.executemany(query, listeners)
             
     # Nicknames time! yay, we create a fake default hostname here since we
     # don't save these in the old database
@@ -246,15 +222,12 @@ def move_data(host, port, username, password, old_db):
                  id=LAST_INSERT_ID(id), track_id=VALUES(track_id);""", (metadata, tid))
         return cursor.lastrowid
     def link_track_album(cursor, tid, aid):
-        try:
-            cursor.execute("""INSERT INTO track_has_album (track_id, album_id)
-            VALUES (%s, %s);""", (tid, aid))
-        except mysql.IntegrityError:
-            logging.warning("Duplicate entry ignored")
+        cursor.execute("""INSERT INTO track_has_album (track_id, album_id)
+        VALUES (%s, %s);""", (tid, aid))
     def get_user_id(cursor, username):
         if not username:
             username = "Unknown"
-        cursor.execute("SELECT id FROM auth_user WHERE username=%s;", (username,))
+        cursor.execute("SELECT id FROM users WHERE username=%s;", (username,))
         for id, in cursor:
             if id:
                 return id
@@ -263,7 +236,7 @@ def move_data(host, port, username, password, old_db):
             else:
                 raise ValueError("Unknown user")
     def get_dj_id(cursor, username):
-        cursor.execute("SELECT djs.id AS id FROM djs JOIN auth_user ON auth_user.id = djs.user WHERE auth_user.username=%s;", (username,))
+        cursor.execute("SELECT djs.id AS id FROM djs JOIN users ON users.id = djs.user WHERE users.username=%s;", (username,))
         for id, in cursor:
             return id
     def get_nick_id(cursor, nick):
@@ -351,8 +324,7 @@ def move_data(host, port, username, password, old_db):
         (%s, %s) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""",
         (songs_id, nicknames_id))
         return cursor.lastrowid
-    
-    logging.info("Working on: songs from esong (This one takes longest)")
+    logging.info("Working on: songs from esong")
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
         with Cursor(options_new, cursortype=cursors.Cursor) as new_cur:
             old_cur.execute("SELECT id, hash, meta, len FROM esong;")
@@ -375,7 +347,7 @@ def move_data(host, port, username, password, old_db):
                 for nick, in old_cur:
                     add_fave(new_cur, songs_id=songs_id,
                              nicknames_id=get_nick_id(new_cur, nick))
-    logging.info("Working on: songs from tracks (Not as long as above)")
+    logging.info("Working on: songs from tracks")
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
         with Cursor(options_new, cursortype=cursors.Cursor) as new_cur:
             old_cur.execute("""SELECT * FROM tracks;""")
@@ -459,18 +431,10 @@ def move_data(host, port, username, password, old_db):
                                                good_upload=good_upload,
                                                decline_reason=reason)
                 try:
-                    add_uploads(new_cur, listeners_id, time, collection_id)
+                    add_uploads(new_cur, listeners_id, ip, collection_id)
                 except:
-                    #print listeners_id, collection_id
-                    raise
+                    print listeners_id, collection_id
                     
-    logging.info("Creating indices.")
-    with Cursor(options_new, cursortype=cursors.Cursor) as cur:
-        cur.execute("CREATE INDEX `played_time` ON `radio_main`.`played` (`time` ASC);")
-        cur.execute("CREATE INDEX `uploads_time` ON `radio_main`.`uploads` (`time` ASC);")
-        cur.execute("CREATE INDEX `editors_time` ON `radio_main`.`collection_editors` (`time` ASC);")
-        cur.execute("CREATE INDEX `faves_time` ON `radio_main`.`faves` (`time` ASC);")
-        cur.execute("CREATE INDEX `requests_time` ON `radio_main`.`requests` (`time` ASC);")
     logging.info("Finished database transfer.")
 
     
@@ -536,11 +500,6 @@ if __name__ == "__main__":
                         nargs="?",
                         required=True,
                         help="File that contains the SQL database creation statements.")
-    parser.add_argument("--django",
-                        dest="django",
-                        nargs="?",
-                        required=True,
-                        help="Location of django project.")
     """parser.add_argument("--new-database",
                         dest="new_database",
                         nargs="?",
@@ -551,7 +510,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print args
     
-    sys.path.append(args.django)
     try:
         create_database(args.sql_file, args.host, args.port,
                          args.user, args.passwd)

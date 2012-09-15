@@ -1,0 +1,15 @@
+{% extends base_template %}
+
+{% load static %}
+{% get_static_prefix as STATIC %}
+
+{% block content %}
+<ul class="media-grid">
+    {% for item in objects %}
+        <li><span rel="twipsy" class="djinfo" data-original-title="{{ item.description }}">
+            <img class="thumbnail djimg" width="150" height="150" src="{{ STATIC }}img/dj/{{ item.image }}" />
+            <span class="djname">{{ item.name }}</span>
+        </span></li>
+    {% endfor %}
+</ul>
+{% endblock content %}

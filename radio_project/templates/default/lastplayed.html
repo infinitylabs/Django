@@ -1,0 +1,35 @@
+{% extends base_template %}
+
+{% block content %}
+{% if lastplayed %}
+<div class="alert-message info" style="display: none;">
+    <p>There is currently no last played information available.</p>
+</div>
+<div class="row">
+{% else %}
+<div class="alert-message info">
+    <p>There is currently no last played information available.</p>
+</div>
+<div class="row" style="display: none;">
+{% endif %}
+    <div class="span16">
+        <table class="zebra-striped">
+            <thead>
+                <tr>
+                    <th><a href="/lastplayed/">Time</a></th>
+                    <th class="head">Last played</th>
+                    <th><a href="/lastplayed/?sort=play">Playcount</a></th>
+                    <th><a href="/lastplayed/?sort=fave">Favorites</a></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in lastplayed %}
+                    <tr><th>{{ item.played.time|date:"j M Y G:i:s" }}</th><td>{{ item.songs.track.metadata }}</td><td>{{ item.songs.played_set.count }}</td><td>{{ item.songs.faves_set.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<a id="paginp" onclick="lastplayed_page_inc(-1);">&lt;<br /><span id="paginpn">x</span></a>
+<a id="paginn" onclick="lastplayed_page_inc(+1);">&gt;<br /><span id="paginnn">2</span></a>
+{% endblock content %}

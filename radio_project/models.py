@@ -110,7 +110,7 @@ class Tags(models.Model):
         return self.name
         
 class CollectionHasTags(models.Model):
-    tags = models.ForeignKey(Tags)
+    tags = models.ForeignKey(Tags, primary_key=True)
     collection = models.ForeignKey(Collection)
     class Meta:
         db_table = u'collection_has_tags'
