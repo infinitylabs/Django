@@ -253,4 +253,11 @@ class Uploads(models.Model):
     def __unicode__(self):
         return str(self.id)
 
-
+class Radvars(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=200)
+    class Meta:
+        db_table = u'radvars'
+    def __unicode__(self):
+        return str(self.name) + ":" + str(self.value)

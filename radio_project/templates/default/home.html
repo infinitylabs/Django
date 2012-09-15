@@ -1,133 +1,151 @@
-<div class="row content-top">
-                $message
-                <div class="span3" id="logo-image-div">
-                    
-                    <!--<img id="logo-image" src="/res/img/logo_image_small.png" alt="Radio logo" />-->
-                </div>
-                <div class="span10">
-                    <div class="row info">
-                        <div class="span10 row" id="introcontainer">
-                            <div id="intro" class="span5">
-                                <img src="/res/img/logotitle_2.png" alt="Radio" />
-                            </div>
-                            <div id="soundmanager-debug"></div>
-                            <div id="streamconnect" class="span4">
-                                
-                                <div class="span4 browplay-jp">
-                                    <button rel="twipsy" class="fill btn info jp-play" disabled="disabled" data-original-title="Play the stream directly in your browser. Uses HTML5 if possible, else a Flash fallback.">Play in browser</button>
-                                    <div class="fill btn info active jp-pause" style="display: none; width: 90%; text-align: center; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);"><div class="progress jp-volume-bar success" style="height: 10px; margin: 0px;"><div class="bar jp-volume-bar-value" style="width:10%"></div></div>Stop</div>
-                                </div>
-                                <a href="#" id="expand-panel">More stream options</a>
+{% extends base_template %}
 
-                            </div>
-                        </div>
-                        <div id="streamconnect-panel" class="span10 row">
-                            <div class="span4" id="panel-links">
-                                <h4>Stream links</h4>
-                                <a rel="twipsy" class="fill btn info" href="http://stream.r-a-d.io:1130/main.mp3.m3u" data-original-title="Downloadable playlist file that can be opened with most media players.">Playlist File (.m3u)</a><br>
-                                <a class="fill btn info" href="http://r-a-d.io/listen.pls" data-original-title="Downloadable playlist file that can be opened with most media players, in case the m3u doesn't work.">Playlist File (.pls)</a><br>
-                                <a rel="twipsy" class="fill btn info" href="http://stream.r-a-d.io:1130/main.mp3" data-original-title="Direct link to the stream. Don't open this in your browser; copy the link!">Direct Stream Link</a>
-                            </div>
-                            <div class="span4" id="panel-info">
-                                <p>You can also listen to r/a/dio in most music players. All you have to do is copy one of the links to the left into your player and you're good to go!</p>
-                            </div>
-                            
-                            
-                        </div>
-                        
-                        
-                        
-                        <!--<div id="links" class="row">
-                            <div class="span4" style="margin-left: 70px;">
-                                <a rel="twipsy" class="fill btn info" href="http://stream.r-a-d.io:1130/main.mp3.m3u" data-original-title="Downloadable playlist file that can be opened with most media players.">Playlist File (.m3u)</a>
-                            </div>
-                            <div class="span4">
-                                <a class="fill btn info" href="http://r-a-d.io/listen.pls" data-original-title="Downloadable playlist file that can be opened with most media players, in case the m3u doesn't work.">Playlist File (.pls)</a>
-                            </div>
-                            <div class="span4 browplay-jp">
-                                <button rel="twipsy" class="fill btn info jp-play" disabled="disabled" data-original-title="Play the stream directly in your browser. Uses HTML5 if possible, else a Flash fallback.">Play in browser</button>
-                                <div class="fill btn info active jp-pause" style="display: none; width: 90%; text-align: center; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);"><div class="progress jp-volume-bar success" style="height: 10px; margin: 0px;"><div class="bar jp-volume-bar-value"></div></div>Stop</div>
-                            </div>
-                            <div class="span4 browplay-vis">
-                                <a rel="twipsy" id="edplay" class="fill btn info" href="#" data-original-title="Play the stream directly in your browser. ed version: now with 100% more eyecandy">(please wait)</a>
-                            </div>
-                        </div>-->
-                        <div id="main-streamdata" class="row">
-                            <div id="nowplaying" class="span10">
-                                <div class="nowplaying">
-                                    <h2>$nowplaying</h2>
-                                </div>
-                            </div>
-                            <div id="progress" class="span10">
-                                <div class="progress danger">
-                                    <div class="bar" style="width: 100%;"></div>
-                                </div>
-                            </div>
-                            <div id="stream_info" class="span10">
-                                <div class="span2 block-inline listeners">
-                                    Listeners: <span class="value">$listeners</span>
-                                </div>
-                                <div class="span4 block-inline"><span id="current_pos"></span>/<span id="current_len"></span></div>
-                                <div class="span2 block-inline bitrate">
-                                    <!-- Bitrate: <span class="value">$bitrate</span>kbps -->
-                                </div>
-                            </div>
-                        </div>
+{% load static %}
+{% get_static_prefix as STATIC %}
+{% load filters %}
+
+{% block content %}
+<div class="row content-top">
+{% if message %}
+	{{ message }}
+{% endif %}
+	<div class="span3" id="logo-image-div">
+    </div>
+    <div class="span10">
+        <div class="row info">
+            <div class="span10 row" id="introcontainer">
+                <div id="intro" class="span5">
+                    <img src="{{ STATIC }}img/logotitle_2.png" alt="Radio" />
+                </div>
+                <div id="soundmanager-debug"></div>
+                <div id="streamconnect" class="span4">
+                    
+                    <div class="span4 browplay-jp">
+                        <button rel="twipsy" class="fill btn info jp-play" disabled="disabled" data-original-title="Play the stream directly in your browser. Uses HTML5 if possible, else a Flash fallback.">Play in browser</button>
+                        <div class="fill btn info active jp-pause" style="display: none; width: 90%; text-align: center; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);"><div class="progress jp-volume-bar success" style="height: 10px; margin: 0px;"><div class="bar jp-volume-bar-value" style="width:10%"></div></div>Stop</div>
+                    </div>
+                    <a href="#" id="expand-panel">More stream options</a>
+
+                </div>
+            </div>
+            <div id="streamconnect-panel" class="span10 row">
+                <div class="span4" id="panel-links">
+                    <h4>Stream links</h4>
+                    <a rel="twipsy" class="fill btn info" href="http://stream.r-a-d.io:1130/main.mp3.m3u" data-original-title="Downloadable playlist file that can be opened with most media players.">Playlist File (.m3u)</a><br>
+                    <a class="fill btn info" href="http://r-a-d.io/listen.pls" data-original-title="Downloadable playlist file that can be opened with most media players, in case the m3u doesn't work.">Playlist File (.pls)</a><br>
+                    <a rel="twipsy" class="fill btn info" href="http://stream.r-a-d.io:1130/main.mp3" data-original-title="Direct link to the stream. Don't open this in your browser; copy the link!">Direct Stream Link</a>
+                </div>
+                <div class="span4" id="panel-info">
+                    <p>You can also listen to r/a/dio in most music players. All you have to do is copy one of the links to the left into your player and you're good to go!</p>
+                </div>
+                
+                
+            </div>
+            <div id="main-streamdata" class="row">
+                <div id="nowplaying" class="span10">
+                    <div class="nowplaying">
+                        <h2>{{ now_playing }}</h2>
                     </div>
                 </div>
-                <div class="span3">
-                    <ul class="media-grid">
-                        <li>
-                            <span class="djmedia" rel="twipsy" data-original-title="$djtext">
-                                <img class="thumbnail djimg" width="150" height="150" border="0" src="$djimg">
-                                <span id="dj">$djname</span>
-                            </span>
-                        </li>
-                    </ul>
+                <div id="progress" class="span10">
+                    <div class="progress danger">
+                        <div class="bar" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div id="stream_info" class="span10">
+                    <div class="span2 block-inline listeners">
+                        Listeners: <span class="value">{{ listeners }}</span>
+                    </div>
+                    <div class="span4 block-inline"><span id="current_pos"></span>/<span id="current_len"></span></div>
+                    <div class="span2 block-inline bitrate">
+                        <!-- Bitrate: <span class="value">$bitrate</span>kbps -->
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div id="last-played-container" class="span8">
-                    <table class="zebra-striped" id="last-played">
-                        <thead>
-                            <tr>
-                                <th colspan="2">Last Played</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            $lastplayed
-                        </tbody>
-                    </table>
-                </div>
-                $twatter
-                <div id="queue-container" class="span8">
-                    <table class="zebra-striped" id="queue">
-                        <thead>
-                            <tr>
-                                <th colspan="2">Queue</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            $queue
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        </div>
+    </div>
+    <div class="span3">
+        <ul class="media-grid">
+            <li>
+                <span class="djmedia" rel="twipsy" data-original-title="{{ dj.description }}">
+                    <img class="thumbnail djimg" width="150" height="150" border="0" src="{{ STATIC }}img/dj/{{ dj.image }}">
+                    <span id="dj">{{ dj.name }}</span>
+                </span>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div id="last-played-container" class="span8">
+        <table class="zebra-striped" id="last-played">
+            <thead>
+                <tr>
+                    <th colspan="2">Last Played</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in last_played %}
+                	<tr>
+                		<th>{{ row.time|date:"H:i:s" }}</th>
+                		<td>{{ row.songs.track.metadata }}</td>
+                	</tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- $twatter (eggmun's twitter thing TODO) -->
+    <div id="queue-container" class="span8">
+        <table class="zebra-striped" id="queue">
+            <thead>
+                <tr>
+                    <th colspan="2">Queue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in queue %}
+                	<tr>
+                		<th>{{ row.time|date:"H:i:s" }}</th>
+                		<td>
+                			{% if row.type > 0 %}
+                			<b>{{ row.songs.track.metadata }}</b>
+                			{% else %}
+                			{{ row.songs.track.metadata }}
+                			{% endif %}
+                		</td>
+                	</tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-            <!-- ed was here on a mission from kuma-kun -->
-            <div class="row seperator">
-                <div class="seperator span16">
-                </div>
-            </div>
-            <div id="thread" style="position:relative;top:-.6em;text-align:center">
-                $threadmsg
-            </div>
-            <!-- end of (ed)its -->
+<!-- ed was here on a mission from kuma-kun -->
+<div class="row seperator">
+    <div class="seperator span16">
+    </div>
+</div>
+<div id="thread" style="position:relative;top:-.6em;text-align:center">
+    {% if thread_message %}
+    We currently have a thread up. <a href="{{ thread_message }}" target="_blank" >Please join us!</a>
+    {% else %}
+    From time to time we have a thread up on /a/. This however, is no such time.
+    {% endif %}
+</div>
+<!-- end of (ed)its -->
 
-            <div class="row seperator">
-                <div class="seperator span16">
-                </div>
-            </div>
-            <div class="row news">
-                $news
-            </div>
+<div class="row seperator">
+    <div class="seperator span16">
+    </div>
+</div>
+<div class="row news">
+    {% for row in news %}
+    <div class="span-one-third">
+    	<h5><a alt="{{ row.id }}" href="/news/{{ row.id }}">{{ row.title }}</a></h5>
+    	<div class="border">
+    		<h6>{{ row.time|date:"D j M, H:i"|upper }}</h6>
+    		<span class="newstext">{{ row.text|newsformat:"truncate"|safe }}</span>
+    	</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}
