@@ -12,7 +12,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Djs(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=45)
     description = models.TextField(blank=True)
     image = models.TextField(blank=True)
@@ -26,7 +26,7 @@ class Djs(models.Model):
         return self.name
         
 class News(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=45)
     time = models.DateTimeField()
     text = models.TextField()
@@ -38,7 +38,7 @@ class News(models.Model):
         return self.title
         
 class NewsComments(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     news = models.ForeignKey(News)
     nickname = models.CharField(max_length=100, blank=True)
     text = models.TextField()
@@ -51,7 +51,7 @@ class NewsComments(models.Model):
         return self.poster
         
 class Track(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     metadata = models.CharField(max_length=400)
     length = models.IntegerField(null=True, blank=True)
     hash = models.CharField(unique=True, max_length=45)
@@ -61,7 +61,7 @@ class Track(models.Model):
         return self.metadata
         
 class Songs(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     hash = models.CharField(unique=True, max_length=45)
     track = models.ForeignKey(Track)
     class Meta:
@@ -70,7 +70,7 @@ class Songs(models.Model):
         return self.hash
         
 class Album(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=200, blank=True)
     class Meta:
         db_table = u'album'
@@ -78,7 +78,7 @@ class Album(models.Model):
         return self.name
         
 class Collection(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     songs = models.ForeignKey(Songs)
     usable = models.IntegerField()
     filename = models.TextField(blank=True)
@@ -93,7 +93,7 @@ class Collection(models.Model):
         db_table = u'collection'
 
 class CollectionEditors(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     users = models.ForeignKey(User)
     action = models.CharField(max_length=45, blank=True)
     time = models.DateTimeField(null=True, blank=True)
@@ -102,7 +102,7 @@ class CollectionEditors(models.Model):
         db_table = u'collection_editors'
         
 class Tags(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=100, blank=True)
     class Meta:
         db_table = u'tags'
@@ -116,7 +116,7 @@ class CollectionHasTags(models.Model):
         db_table = u'collection_has_tags'
 
 class Hostnames(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     hostname = models.CharField(max_length=150)
     class Meta:
         db_table = u'hostnames'
@@ -124,7 +124,7 @@ class Hostnames(models.Model):
         return self.hostname
         
 class Nicknames(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     nick = models.CharField(unique=True, max_length=30, blank=True)
     passcode = models.CharField(max_length=8, blank=True)
     hostnames = models.ForeignKey(Hostnames)
@@ -134,7 +134,7 @@ class Nicknames(models.Model):
         return self.nick
         
 class Players(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=45, blank=True)
     useragent = models.CharField(unique=True, max_length=200, blank=True)
     class Meta:
@@ -143,7 +143,7 @@ class Players(models.Model):
         return self.name
         
 class Listeners(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     ip = models.CharField(unique=True, max_length=50, blank=True)
     players = models.ForeignKey(Players, null=True, blank=True)
     banned = models.IntegerField()
@@ -155,13 +155,13 @@ class Listeners(models.Model):
         return self.ip
         
 class CurrentListeners(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     listeners = models.ForeignKey(Listeners)
     class Meta:
         db_table = u'current_listeners'
 
 class Faves(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     time = models.DateTimeField(null=True, blank=True)
     songs = models.ForeignKey(Songs)
     nicknames = models.ForeignKey(Nicknames)
@@ -171,7 +171,7 @@ class Faves(models.Model):
         return str(self.id)
         
 class Played(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     time = models.DateTimeField(null=True, blank=True)
     songs = models.ForeignKey(Songs)
     djs = models.ForeignKey(Djs)
@@ -181,7 +181,7 @@ class Played(models.Model):
         return str(self.id)
         
 class Queue(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     type = models.IntegerField(null=True, blank=True)
     songs = models.ForeignKey(Songs)
     time = models.DateTimeField()
@@ -191,7 +191,7 @@ class Queue(models.Model):
         return str(self.id)
         
 class Relays(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     relay_name = models.CharField(max_length=200)
     relay_owner = models.CharField(max_length=200)
     base_name = models.CharField(max_length=200)
@@ -209,7 +209,7 @@ class Relays(models.Model):
         return self.relay_name
         
 class Requests(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     time = models.DateTimeField(null=True, blank=True)
     songs = models.ForeignKey(Songs)
     listeners = models.ForeignKey(Listeners)
@@ -220,7 +220,7 @@ class Requests(models.Model):
         return str(self.id)
         
 class Streamstatus(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     listener_count = models.IntegerField(null=True, blank=True)
     start_time = models.BigIntegerField(null=True, blank=True)
     end_time = models.BigIntegerField(null=True, blank=True)
@@ -232,7 +232,7 @@ class Streamstatus(models.Model):
         return str(self.id)
         
 class TrackHasAlbum(models.Model):
-    track = models.ForeignKey(Track)
+    track = models.ForeignKey(Track, primary_key=True)
     album = models.ForeignKey(Album)
     class Meta:
         db_table = u'track_has_album'
@@ -244,7 +244,7 @@ class TrackHasTags(models.Model):
         db_table = u'track_has_tags'
 
 class Uploads(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     listeners = models.ForeignKey(Listeners)
     time = models.DateTimeField(null=True, blank=True)
     collection = models.ForeignKey(Collection)

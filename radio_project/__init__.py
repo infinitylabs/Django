@@ -1,5 +1,5 @@
 import os
-from django.db.models.signals import post_syncdb, post_save
+from django.db.models.signals import post_syncdb, post_save, pre_delete
 from django.db.models import signals
 from django.dispatch import receiver
 from django.conf import settings
@@ -43,7 +43,16 @@ from radio_project.models import Track, CollectionHasTags, TrackHasAlbum
 WHOOSH_SCHEMA = fields.Schema(kind=fields.ID,
                               content=fields.TEXT,
                               link=fields.IDLIST(stored=True, unique=True))
-
+def get_index():
+    try:
+        storage = FileStorage(settings.WHOOSH_INDEX)
+        return storage.open_index(indexname="search")
+    except IOError:
+        # No index? other error?
+        create_index()
+        storage = FileStorage(settings.WHOOSH_INDEX)
+        return storage.open_index(indexname="search")
+    
 @receiver(post_syncdb)
 def create_index(sender=None, **kwargs):
     if not os.path.exists(settings.WHOOSH_INDEX):
@@ -54,48 +63,62 @@ def create_index(sender=None, **kwargs):
 
 @receiver(post_save, sender=Track)
 def update_index_track(sender, instance, created, **kwargs):
-    storage = FileStorage(settings.WHOOSH_INDEX)
-    ix = storage.open_index(indexname="search")
-    writer = ix.writer()
-    if created:
-        writer.add_document(kind=u"track",
-                            content=instance.metadata,
-                            link=u"t {:d}".format(instance.id))
-        writer.commit()
-    else:
-        writer.update_document(kind=u"track",
-                               content=instance.metadata,
-                            link=u"t {:d}".format(instance.id))
-        writer.commit()
+    ix = get_index()
+    with ix.writer() as writer:
+        if Track.objects.filter(songs__collection__isnull=False,
+                                id=instance.id):
+            kind = u"collection"
+        else:
+            kind = u"track"
+        if created:
+            writer.add_document(kind=kind,
+                                content=instance.metadata,
+                                link=u"t {:d}".format(instance.id))
+        elif instance.id is not None:
+            writer.update_document(kind=kind,
+                                   content=instance.metadata,
+                                link=u"t {:d}".format(instance.id))
     
 @receiver(post_save, sender=CollectionHasTags)
 def update_index_tag(sender, instance, created, **kwargs):
-    storage = FileStorage(settings.WHOOSH_INDEX)
-    ix = storage.open_index(indexname="search")
-    writer = ix.writer()
-    if created:
-        writer.add_document(kind=u"tag",
-                            content=instance.tags.name,
-                            link=u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
-        writer.commit()
-    else:
-        writer.update_document(kind=u"tag",
-                            content=instance.tags.name,
-                            link="g {:d} {:d}".format(instance.tags_id, instance.collection_id))
-        writer.commit()
+    ix = get_index()
+    with ix.writer() as writer:
+        if created:
+            writer.add_document(kind=u"tag",
+                                content=instance.tags.name,
+                                link=u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
+        elif instance.tags_id is not None and instance.collection_id is not None:
+            writer.update_document(kind=u"tag",
+                                content=instance.tags.name,
+                                link=u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
 
 @receiver(post_save, sender=TrackHasAlbum)
 def update_index_album(sender, instance, created, **kwargs):
-    storage = FileStorage(settings.WHOOSH_INDEX)
-    ix = storage.open_index(indexname="search")
-    writer = ix.writer()
-    if created:
-        writer.add_document(kind=u"album",
-                            content=instance.album.name,
-                            link=u"a {:d} {:d}".format(instance.album_id, instance.track_id))
-        writer.commit()
-    else:
-        writer.update_document(kind=u"album",
-                            content=instance.album.name,
-                            link=u"a {:d} {:d}".format(instance.album_id, instance.track_id))
-        writer.commit()
+    ix = get_index()
+    with ix.writer() as writer:
+        if created:
+            writer.add_document(kind=u"album",
+                                content=instance.album.name,
+                                link=u"a {:d} {:d}".format(instance.album_id, instance.track_id))
+        elif instance.album_id is not None and instance.track_id is not None:
+            writer.update_document(kind=u"album",
+                                content=instance.album.name,
+                                link=u"a {:d} {:d}".format(instance.album_id, instance.track_id))
+            
+@receiver(pre_delete, sender=Track)
+def delete_index_track(sender, instance, **kwargs):
+    ix = get_index()
+    with ix.writer() as writer:
+        writer.delete_by_term("link", u"t {:d}".format(instance.id))
+        
+@receiver(pre_delete, sender=CollectionHasTags)
+def delete_index_tag(sender, instance, **kwargs):
+    ix = get_index()
+    with ix.writer() as writer:
+        writer.delete_by_term("link", u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
+        
+@receiver(pre_delete, sender=TrackHasAlbum)
+def delete_index_album(sender, instance, **kwargs):
+    ix = get_index()
+    with ix.writer() as writer:
+        writer.delete_by_term("link", u"a {:d} {:d}".format(instance.album_id, instance.track_id))
