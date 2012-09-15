@@ -31,6 +31,27 @@ def jsonp(f): # https://gist.github.com/871954
                 
     return jsonp_wrapper
 
+def lp_time_format(date):
+    """Formats a datetime.datetime object into a time for the Last Played page"""
+    import datetime
+    now = datetime.datetime.now()
+    delta = now - date
+    if delta.days >= 1:
+        return "{days} day{s} ago".format(days=delta.days, s=('' if delta.days == 1 else 's'))
+    else:
+        return datetime.datetime.utcfromtimestamp(delta.total_seconds()).strftime('%H:%M:%S')
+
+def queue_time_format(date):
+    """Formats a datetime.datetime object into a time for the Queue page"""
+    import datetime
+    now = datetime.datetime.now()
+    delta = date - now
+    return datetime.datetime.utcfromtimestamp(delta.total_seconds()).strftime('%H:%M')
+
+def search_time_format(date):
+    """Formats a datetime.datetime object into a time for the Search page"""
+    return date.strftime('%a %d %b, %H:%M')
+
 from django.core.paginator import InvalidPage, Paginator as _Paginator
 class Paginator(_Paginator):
     def get_context(self, page, range_gap=5):
