@@ -5,7 +5,7 @@ body {
 	padding-top: 50px;
 	font-family: "Helvetica Neue", Arial, sans-serif !important;
 	background-color: whiteSmoke;
-	background-image: url("/res/img/fadegrid.png");
+	background-image: url("/static/img/fadegrid.png");
 	background-repeat: repeat-x;	
 }
 noscript.javascript {
@@ -48,7 +48,7 @@ noscript .alert-message {
 	width: 200px;
 	height: 220px;
 	/*margin-left: -20px;*/
-	background: url("/res/img/logo_image_small.png") no-repeat;
+	background: url("/static/img/logo_image_small.png") no-repeat;
 }
 #introcontainer {
 	height: 120px;
