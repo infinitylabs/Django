@@ -32,18 +32,32 @@ class mapper(object):
         Searcher.maps[self.kind] = f
         return f
 
+class SiteParser(QueryParser):
+    """Default whoosh parser for website usage, it disables the WildcardPlugin because
+    it can affect performance if used wrongly"""
+    def __init__(self, *args, **kwargs):
+        super(SiteParser, self).__init__("content", WHOOSH_SCHEMA, *args, **kwargs)
+        self.remove_plugin_class(WildcardPlugin)
+        
 class Searcher(object):
     maps = {} # Where we save our mapping functions
     regex = re.compile(r"([tga]) ([0-9]+)(?: ([0-9]+))?")
-    def __init__(self, default="track"):
+    def __init__(self, default="track", parser=SiteParser):
         super(Searcher, self).__init__()
         self.ix = get_index()
         self.default_kind = default
+        self.parser = parser
     def __enter__(self):
         self.searcher = self.ix.searcher()
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.searcher.close()
+    def parse(self, query):
+        try:
+            return self.parser.parse(query)
+        except TypeError:
+            self.parser = self.parser()
+            return self.parser.parse(query)
     def search(self, *args, **kwargs):
         """Search method, your entry point to the search engine
         
@@ -68,7 +82,20 @@ class Searcher(object):
             kind = self.default_kind
         
         result = self.searcher.search(*args, **kwargs)
-        return self.map(result, kind)
+        gemapped = self.map(result, kind)
+        gemapped.runtime = result.runtime
+        return gemapped
+    def search_page(self, *args, **kwargs):
+        try:
+            kind = kwargs['kind']
+            del kwargs['kind']
+        except KeyError:
+            kind = self.default_kind
+        
+        result = self.searcher.search_page(*args, **kwargs)
+        gemapped = self.map(result, kind)
+        gemapped.runtime = result.runtime
+        return gemapped
     def map(self, result, kind):
         """Loops over search results and puts them in usable sequences that
         are passed to individual mappers depending on output format.
@@ -127,13 +154,6 @@ def map_track(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(id__in=tracks) | Q(songs__collection__in=tags)
     return Track.objects.filter(query)
-
-class SiteParser(QueryParser):
-    """Default whoosh parser for website usage, it disables the WildcardPlugin because
-    it can affect performance if used wrongly"""
-    def __init__(self, *args, **kwargs):
-        super(SiteParser, self).__init__("content", WHOOSH_SCHEMA, *args, **kwargs)
-        self.remove_plugin_class(WildcardPlugin)
         
 def fill_index():
     """Creates if doesn't exist and fills the whoosh index with the whole
@@ -177,3 +197,10 @@ def search(query, *args, **kwargs):
     Searcher class for searching inside views"""
     with Searcher() as s:
         return s.search(query, *args, **kwargs)
+    
+@query_parser
+def search_page(query, *args, **kwargs):
+    """Simple search method, should be used for testing only. Use the actual
+    Searcher class for searching inside views"""
+    with Searcher() as s:
+        return s.search_page(query, *args, **kwargs)

@@ -1,0 +1,44 @@
+{% extends base_template %}
+{% load elif %}
+
+{% block content %}
+{% if results|length == 0 %}
+    <div class="alert-message error"><p>Your search did not return any results.</p></div>
+{% elif not results %}
+    <div class="alert-message success"><p>Welcome to the search page. Use the search field at the top to search.</p></div>
+{% else %}
+<table class="zebra-striped bordered-table condensed-table" id="results">
+    <thead>
+        <tr>
+            <th class="h-songid">ID</th>
+            <th class="h-info">Artist - Title</th>
+            <th class="h-last">Last played</th>
+            <th class="h-last">Last requested</th>
+            <th class="h-request">Request</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in results %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.metadata }}</td>
+            <td>{{ item.lastplayed }}</td>
+            <td>{{ item.lastrequested }}</td>
+            <td>
+                <form method="POST" action="/request/" name="requestform">
+                    <input type="hidden" value="{{ item.id }}" name="songid">
+                    <input class="btn info" type="submit" value="Request">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<span>Query took: {{ runtime }} sec</span>
+<div class="pagination">
+    <ul>
+        $pagination
+    </ul>
+</div>
+{% endif %}
+{% endblock content %}
