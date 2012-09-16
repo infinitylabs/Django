@@ -9,7 +9,7 @@ def index(request):
             request.GET.get("barebone", False) else \
             "default/base.html"
     return render_to_response("default/staff.html",
-                              {"objects": Djs.objects.filter(visible=1),
+                              {"objects": Djs.objects.filter(visible=1).order_by('priority'),
                                "base_template": base_template},
                               context_instance=RequestContext(request))
     
@@ -19,4 +19,4 @@ def api(request):
     return [{"name": i.name,
             "description": i.description,
             "image": i.image} for i in \
-                Djs.objects.filter(visible=1).only("name", "description", "image")]
+                Djs.objects.filter(visible=1).order_by('priority').only("name", "description", "image")]
