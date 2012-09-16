@@ -48,14 +48,11 @@ def lp_time_format(date):
     if delta.days >= 1:
         return "{days} day{s} ago".format(days=delta.days, s=('' if delta.days == 1 else 's'))
     else:
-        return datetime.datetime.utcfromtimestamp(delta.total_seconds()).strftime('%H:%M:%S')
+        return date.strftime('%H:%M:%S')
 
 def queue_time_format(date):
     """Formats a datetime.datetime object into a time for the Queue page"""
-    import datetime
-    now = datetime.datetime.now()
-    delta = date - now
-    return datetime.datetime.utcfromtimestamp(delta.total_seconds()).strftime('%H:%M')
+    return date.strftime('%H:%M:%S')
 
 def search_time_format(date):
     """Formats a datetime.datetime object into a time for the Search page"""
