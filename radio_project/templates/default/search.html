@@ -1,5 +1,8 @@
 {% extends base_template %}
 {% load elif %}
+{% load filters %}
+
+{% block html_page %}page-p-search{% endblock %}
 
 {% block content %}
 {% if results|length == 0 %}
@@ -22,8 +25,8 @@
         <tr>
             <td>{{ item.id }}</td>
             <td>{{ item.metadata }}</td>
-            <td>{{ item.lastplayed }}</td>
-            <td>{{ item.lastrequested }}</td>
+            <td>{{ item.lastplayed|searchtimeformat }}</td>
+            <td>{{ item.lastrequested|searchtimeformat }}</td>
             <td>
                 <form method="POST" action="/request/" name="requestform">
                     <input type="hidden" value="{{ item.id }}" name="songid">

@@ -56,6 +56,8 @@ def queue_time_format(date):
 
 def search_time_format(date):
     """Formats a datetime.datetime object into a time for the Search page"""
+    if date is None:
+        return u'Never'
     return date.strftime('%a %d %b, %H:%M')
 
 from django.core.paginator import InvalidPage, Paginator as _Paginator

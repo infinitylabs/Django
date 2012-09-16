@@ -1,4 +1,7 @@
 {% extends base_template %}
+{% load filters %}
+
+{% block html_page %}page-p-lastplayed{% endblock %}
 
 {% block content %}
 {% if lastplayed %}
@@ -25,7 +28,7 @@
             <tbody>
                 {% for item in lastplayed %}
                     <tr>
-                        <th>{{ item.played.time|date:"j M Y G:i:s" }}</th>
+                        <th>{{ item.played.time|lptimeformat }}</th>
                         <td>{{ item.songs.track.metadata }}</td>
                         <td>{{ item.songs.played_set.count }}</td>
                         <td>{{ item.songs.faves_set.count|default:"None" }}</td>
