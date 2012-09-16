@@ -72,6 +72,7 @@ class Songs(models.Model):
 class Album(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=200, blank=True)
+    track = models.ManyToManyField(Track, through="TrackHasAlbum")
     class Meta:
         db_table = u'album'
     def __unicode__(self):

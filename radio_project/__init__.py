@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from whoosh import store, fields, index
 from whoosh.filedb.filestore import FileStorage
+from whoosh.writing import BufferedWriter
 from radio_project.models import Track, CollectionHasTags, TrackHasAlbum
 
 """
@@ -43,6 +44,7 @@ from radio_project.models import Track, CollectionHasTags, TrackHasAlbum
 WHOOSH_SCHEMA = fields.Schema(kind=fields.ID,
                               content=fields.TEXT,
                               link=fields.IDLIST(stored=True, unique=True))
+
 def get_index():
     try:
         storage = FileStorage(settings.WHOOSH_INDEX)
@@ -55,6 +57,8 @@ def get_index():
     
 @receiver(post_syncdb)
 def create_index(sender=None, **kwargs):
+    """Creates a File based whoosh index, location used is
+    settings.WHOOSH_INDEX so make sure that is set"""
     if not os.path.exists(settings.WHOOSH_INDEX):
         os.mkdir(settings.WHOOSH_INDEX)
         storage = FileStorage(settings.WHOOSH_INDEX)
