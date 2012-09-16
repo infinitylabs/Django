@@ -23,14 +23,9 @@ def index(request):
                                "page": page},
                               context_instance=RequestContext(request))
 @jsonp
-@json_wrap
+@json_wrap()
 def api(request):
-    page = get_content(request)
-    return [{"time": str(i.time),
-             "track": i.songs.track.metadata,
-             "playcount": i.songs.played_set.count(),
-             "favecount": i.songs.faves_set.count()} for i in \
-            page['objects']]
+    return get_content(request)['objects']
     
 def test(page=None):
     import random

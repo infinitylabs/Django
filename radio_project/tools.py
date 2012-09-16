@@ -1,13 +1,61 @@
 """Various tool found through our journey!"""
 from django.http import HttpResponse
-from functools import wraps
+from functools import wraps, update_wrapper
 import json
-def json_wrap(f):
-    @wraps(f)
-    def json_wrapper(request, *args, **kwargs):
-        data = f(request, *args, **kwargs)
-        return HttpResponse(json.dumps(data), content_type="application/json")
-    return json_wrapper
+from django.db.models.query import QuerySet
+from datetime import datetime
+from time import mktime
+
+class JSONEncoder(json.JSONEncoder):
+    def __init__(self, hint=None, *args, **kwargs):
+        super(JSONEncoder, self).__init__(*args, **kwargs)
+        if not hint:
+            self.hint = {}
+        else:
+            self.hint = hint
+    @classmethod
+    def modelattr(cls, object, attribute):
+        """Returns an attribute accepting django notation for multiple depth"""
+        for attr in attribute.split("__"):
+            if attr.endswith('!'):
+                object = getattr(object, attr[:-1])()
+            else:
+                object = getattr(object, attr)
+        return object
+    
+    def default(self, o):
+        modelattr = self.modelattr
+        if hasattr(o, "json_hint"):
+            rdict = {}
+            try:
+                for key, value in o.json_hint.iteritems():
+                    rdict[key] = modelattr(o, value)
+                return rdict
+            except AttributeError:
+                try:
+                    return [modelattr(o, value) for value in o.json_hint]
+                except:
+                    return o.json_hint
+        elif type(o) in self.hint:
+            o.json_hint = self.hint[type(o)]
+            return self.default(o)
+        elif isinstance(o, QuerySet):
+            return list(o)
+        elif isinstance(o, datetime):
+            return mktime(o.timetuple())
+        else:
+            super(JSONEncoder, self).default(o)
+            
+class json_wrap(object):
+    """"""
+    def __init__(self, hint=None):
+        self.hint = hint
+    def __call__(self, f):
+        @wraps(f)
+        def json_wrapper(request, *args, **kwargs):
+            data = f(request, *args, **kwargs)
+            return HttpResponse(JSONEncoder(hint=self.hint).encode(data), content_type="application/json")
+        return json_wrapper
 
 def jsonp(f): # https://gist.github.com/871954
     """Wrap a json response in a callback, and set the mimetype (Content-Type) header accordingly

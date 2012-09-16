@@ -18,7 +18,6 @@ def index(request):
                           context_instance=RequestContext(request))
     
 @jsonp
-@json_wrap
+@json_wrap()
 def api(request):
-    return [{"time": str(i.time),
-             "track": i.songs.track.metadata} for i in get_content(request)]
+    return get_content(request)

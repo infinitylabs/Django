@@ -2,6 +2,7 @@ from ..tools import Paginator, jsonp, json_wrap
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..search import Searcher
+from ..models import Track
 
 lastplayed = """SELECT MAX(played.time) FROM played JOIN songs ON
                 songs.id = played.songs_id JOIN track AS inner_tracks 
@@ -40,10 +41,9 @@ def index(request):
     return render_to_response("default/search.html", context,
                               context_instance=RequestContext(request))
 @jsonp
-@json_wrap
+@json_wrap({Track: ["metadata", "lastplayed", "lastrequested"]})
 def api(request):
     page, runtime = get_content(request)
-    page['objects'] = map(map_track, page['objects'])
     return [runtime, [page]]
 
 from time import mktime

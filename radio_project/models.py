@@ -172,6 +172,11 @@ class Faves(models.Model):
         return str(self.id)
         
 class Played(models.Model):
+    json_hint = {"time": "time",
+                 "track": "songs__track__metadata",
+                 "playcount": "songs__played_set__count!",
+                 "favecount": "songs__faves_set__count!"}
+    
     id = models.AutoField(primary_key=True)
     time = models.DateTimeField(null=True, blank=True)
     songs = models.ForeignKey(Songs)
@@ -182,6 +187,9 @@ class Played(models.Model):
         return str(self.id)
         
 class Queue(models.Model):
+    json_hint = {"time": "time",
+                 "track": "songs__track__metadata"}
+    
     id = models.AutoField(primary_key=True)
     type = models.IntegerField(null=True, blank=True)
     songs = models.ForeignKey(Songs)

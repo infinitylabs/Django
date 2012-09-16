@@ -2,15 +2,8 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..models import Streamstatus, Played, Queue, News, Radvars
 from ..tools import json_wrap, jsonp
-def get_content():
-    return {}
 
-def index(request):
-    base_template = "default/barebone.html" if \
-                    request.GET.get("barebone", False) else \
-                    "default/base.html"
-    context = {'base_template': base_template}
-    
+def get_content(request, context):
     # Now playing info, Listeners info, DJ info
     try:
         np = Streamstatus.objects.select_related("songs__track", "djs")[0]
@@ -37,9 +30,21 @@ def index(request):
         
     # News info
     context["news"] = News.objects.all().select_related().order_by('-time')[:3]
+    return context
+
+def index(request):
+    base_template = "default/barebone.html" if \
+                    request.GET.get("barebone", False) else \
+                    "default/base.html"
+    context = {'base_template': base_template}
+    
+    get_content(request, context)
 
     return render_to_response("default/home.html", context,
                               context_instance=RequestContext(request))
     
+@jsonp
+@json_wrap({News: ["id", "time", "title", "text"]})
 def api(request):
-    pass
+    return get_content(request, {})
+    
