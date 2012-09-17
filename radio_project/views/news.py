@@ -1,12 +1,15 @@
 from django import forms
-from ..models import NewsComments, News
+from ..models import NewsComments, News, User
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from captcha.fields import ReCaptchaField
 from django.conf import settings
+from django.forms.fields import CharField
 
 class NewsCommentForm(forms.ModelForm):
     captcha = ReCaptchaField()
+    nickname = CharField(initial=u'Anonymous', max_length=100)
+    text = CharField(required=True, error_messages={'required':u'You need to enter a comment'}, widget = forms.widgets.Textarea())
     class Meta:
         model = NewsComments
         fields = ('nickname', 'text', 'mail', 'captcha')
@@ -21,7 +24,25 @@ def index(request):
         if request.method == "POST":
             formset = NewsCommentForm(request.POST, request.FILES)
             if formset.is_valid():
-                formset.save()
+                #if formset.cleaned_data['nickname'] == u'':
+                #    formset.cleaned_data['nickname'] = u'Anonymous' #consistency
+                instance = formset.save(commit=False)
+                instance.news_id = nid
+                if request.user.is_authenticated():
+                    instance.poster = request.user
+                else:
+                    instance.poster = None
+                instance.save()
+                return render_to_response("default/redir.html",
+                                          {'redir_time':5,
+                                           'redir_url':'/news/?nid=' + nid,
+                                           'redir_text': 'Thank you for your comment.'},
+                                          context_instance=RequestContext(request))
+            return render_to_response("default/redir.html",
+                                      {'redir_time':5,
+                                       'redir_url':'/news/?nid=' + nid,
+                                       'redir_text': 'An error occurred when posting the comment.'},
+                                      context_instance=RequestContext(request))
         else:
             formset = NewsCommentForm()
             #captcha = ReCaptchaField(public_key=settings.RECAPTCHA_PUBLIC_KEY,
@@ -29,7 +50,7 @@ def index(request):
             #formset.captcha = captcha
             try:
                 news = [News.objects.get(pk=nid)]
-                comments = NewsComments.objects.filter(news=nid)
+                comments = NewsComments.objects.filter(news=nid).order_by('-time')
             except News.DoesNotExist:
                 news = None
                 comments = []

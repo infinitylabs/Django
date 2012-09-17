@@ -29,4 +29,9 @@ def newsformat(value, arg=None):
             value = value[:value.index('TRUNCATE')]
         value = value.replace('TRUNCATE', '')
     return value
-    
+   
+@register.filter
+def commentformat(value):
+    """Formats a comment with line breaks."""
+    value = value.replace('\n', '<br>', 10)
+    return value

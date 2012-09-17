@@ -10,7 +10,7 @@
         <div class="news" value="{{ item.id }}">
             <h5><a href="/news/?nid={{ item.id }}">{{ item.title }}</a></h5>
             <div class="well content">
-                <div class="nw_time">{{ item.time }}</div>
+                <div class="nw_time">{{ item.time|date:"D j M, H:i" }}</div>
                 {{ item.text|newsformat|safe }}
             </div>
     {% endfor %}
@@ -23,7 +23,9 @@
             </div>
 {% endif %}
 
-<form id="comment-form" action="/news/?nid=$nid" method="post">
+{% if formset %}
+<form id="comment-form" action="/news/?nid={{ news.0.id }}" method="post">
+{% csrf_token %}
     <table cellspacing="0" cellpadding="2">
         <tr>
             <td colspan="2" align="center">Submit a comment</td>
@@ -58,13 +60,14 @@
         </tr>
     </table>
 </form>
+{% endif %}
 
 {% for comment in comments %}
     <div class="comment well">
         <div class="cmt_head">
-            <a class="cmt_name" href="mailto:{{ comment.mail }}">{{ comment.nickname }}</a>{% if comment.poster %}<abbr title="This was posted by {{ comment.poster.username }}.">★</abbr>{% endif %}<span class="cmt_time">{{ comment.time }}</span>
+            <a class="cmt_name" href="mailto:{{ comment.mail }}">{{ comment.nickname }}</a>{% if comment.poster %}&nbsp;<abbr title="This was posted by {{ comment.poster.username }}.">&#9733;</abbr>{% endif %}<span class="cmt_time">{{ comment.time }}</span>
         </div>
-        <div class="cmt_text">{{ comment.text }}</div>
+        <div class="cmt_text">{% if comment.poster %} {{ comment.text|commentformat|safe }} {% else %} {{ comment.text }}{% endif %}</div>
     </div>
 {% endfor %}
 </div>
