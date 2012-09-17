@@ -19,7 +19,7 @@ def searchtimeformat(value):
     return tools.search_time_format(value)
 
 @register.filter
-def newsformat(value, arg):
+def newsformat(value, arg=None):
     """Formats a news post string with line breaks and truncation (if needed)
     Argument: truncate - truncates the string at the TRUNCATE mark
     """

@@ -1,0 +1,80 @@
+{% extends base_template %}
+{% load filters %}
+
+{% block html_page %}page-p-news{% endblock %}
+
+{% block content %}
+
+{% if news %}
+    {% for item in news %}
+        <div class="news" value="{{ item.id }}">
+            <h5><a href="/news/?nid={{ item.id }}">{{ item.title }}</a></h5>
+            <div class="well content">
+                <div class="nw_time">{{ item.time }}</div>
+                {{ item.text|newsformat|safe }}
+            </div>
+    {% endfor %}
+{% else %}
+        <div class="news" value="0">
+            <h5><a href="/news/?nid=0">The news post you are looking for does not exist.</a></h5>
+            <div class="well content">
+                <div class="nw_time">00:00:00</div>
+                Read the title.
+            </div>
+{% endif %}
+
+<form id="comment-form" action="/news/?nid=$nid" method="post">
+    <table cellspacing="0" cellpadding="2">
+        <tr>
+            <td colspan="2" align="center">Submit a comment</td>
+        </tr>
+        <tr>
+            {{ formset.nickname.errors }}
+            <td>Name: (max 100c)</td>
+            <td>
+                {{ formset.nickname }}
+            </td>
+        </tr>
+        <tr>
+            {{ formset.mail.errors }}
+            <td>Email: (optional)</td>
+            <td>{{ formset.mail }}</td>
+        </tr>
+        <tr>
+            {{ formset.text.errors }}
+            <td>Comment:</td>
+            <td>
+                {{ formset.text }}
+            </td>
+        </tr>
+        <tr>
+            <td>Captcha:</td>
+            <td><div id="captcha">{{ formset.captcha }}</div></td>
+        </tr>
+        <tr>
+            <td colspan="2" align="center">
+                <input class="btn primary" type="submit" value="Submit" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+{% for comment in comments %}
+    <div class="comment well">
+        <div class="cmt_head">
+            <a class="cmt_name" href="mailto:{{ comment.mail }}">{{ comment.nickname }}</a>{% if comment.poster %}<abbr title="This was posted by {{ comment.poster.username }}.">★</abbr>{% endif %}<span class="cmt_time">{{ comment.time }}</span>
+        </div>
+        <div class="cmt_text">{{ comment.text }}</div>
+    </div>
+{% endfor %}
+</div>
+        <div id="comment_info" class="fade modal" style="display: none;" data-backdrop="true" data-keyboard="true">
+            <div class="modal-header">
+                <a class="close" href="#">~</a>
+                <h3>News comment</h3>
+            </div>
+            <div class="modal-body">
+            
+            </div>
+        </div>
+{% endblock content %}
