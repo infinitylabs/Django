@@ -125,25 +125,25 @@ class Searcher(object):
         return mapper(track_list, tag_list, album_list)
     
 @mapper(kind="tags")
-def map_tags(self, tracks, tags, albums):
+def map_tags(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(collectionhastags__collection__songs__track__in=tracks) | Q(collectionhastags__collection__id__in=tags)
     return Tags.objects.filter(query)
 
 @mapper(kind="album")
-def map_album(self, tracks, tags, albums):
+def map_album(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(trackhasalbum__track__in=tracks) | Q(trackhasalbum__track__songs__collection__id__in=tags)
     return Album.objects.filter(query)
 
 @mapper(kind="songs")
-def map_songs(self, tracks, tags, albums):
+def map_songs(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(track__id__in=tracks) | Q(collection__id__in=tags)
     return Songs.objects.filter(query)
 
 @mapper(kind="collection")
-def map_collection(self, tracks, tags, albums):
+def map_collection(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(songs__track__in=tracks) | Q(id__in=tags)
     return Collection.objects.filter(query)

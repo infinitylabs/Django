@@ -1,11 +1,26 @@
 """Various tool found through our journey!"""
 from django.http import HttpResponse
-from functools import wraps, update_wrapper
+from functools import wraps
 import json
 from django.db.models.query import QuerySet
+from django.conf import settings
 from datetime import datetime
 from time import mktime
+import contextlib
+import string
+import os.path
+import random
 
+def filename_generator(extension, size=15, chars=string.letters + string.digits):
+    return os.path.join(settings.MUSIC_ROOT, ''.join(random.choice(chars) for x in xrange(size)) + extension)
+
+def get_filename(file):
+    extension = os.path.splitext(file.name)[1]
+    filename = filename_generator(extension)
+    while os.path.isfile(filename):
+        filename = filename_generator(extension)
+    return filename
+ 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, hint=None, *args, **kwargs):
         super(JSONEncoder, self).__init__(*args, **kwargs)
@@ -169,4 +184,4 @@ class Link(object):
         for items in self._items:
             if items:
                 return True
-        return False
+        return Fals

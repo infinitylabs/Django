@@ -1,0 +1,101 @@
+{% extends base_template %}
+{% load filters %}
+
+{% block content %}
+   <div class="alert-message {{ canupload|yesno:"success,error" }}"><p>{{ uploadmessage|newsformat|safe }}</p></div>
+        <div id="submit-form-main" class="well">
+            {{ submitmessage|safe }}
+            <hr>
+            <form name="songsubmit" enctype="multipart/form-data" action="/submit/" method="POST">{% csrf_token %}
+                <div class="row">
+                    <div class="span8">
+                        <div class="input-div input-e">
+                            <input type="hidden" name="MAX_FILE_SIZE" value="15728640" />
+                            {{ formset.track.error }}
+                            <label for="file">File</label>
+                            {{ formset.track }}
+                        </div>
+                        <div class="input-div input-e">
+                            {{ formset.comment.error }}
+                            <label for="comment">Comment</label>
+                            {{ formset.comment }}
+                        </div>
+                        <div class="input-div input-e hidden">
+                            {{ formset.daypass.error }}
+                            <label for="daypass">Daypass</label>
+                            {{ formset.daypass }}
+                        </div>
+                        <div class="input-e">
+                            <input type="submit" class="btn primary submit-btn $disable2" value="Upload" $disable />
+                        </div>
+                    </div>
+                    <div class="span6">
+                        <h3 class="replace-song-header input-e">Specify song replacement</h3>
+                        {{ formset.replace.error }}
+                        <ul class="replace-song input-e">
+                            {{ formset.replace }}
+                        </ul>
+                    </div>
+                </div>
+            </form>
+            <div id="submit_uploading" style="display: none;">
+                <div style="text-align: center;">
+                    <img src="/res/img/ed_spin.gif">
+                </div>
+                <div style="text-align: center;">
+                    Uploading<br /><br />You can navigate the other pages while uploading.
+                </div>
+            </div>
+            <hr>
+            <script>
+$('label').first().click(function() {
+    $('.hidden').css('display','block');
+    $('input').removeAttr('disabled');
+});
+            </script>
+            <div id="submit-tables">
+                <div class="row">
+                    <div class="span7">
+                        <table class="submit-table" id="accepted-table">
+                            <tr>
+                                <th class="mainhead">Latest accepted songs</th>
+                            </tr>
+                            <tr>
+                                <th>Song</th>
+                            </tr>
+                            {% for accept in accepted %}
+                                <tr><td style="color:#007070;">{{ accept.songs.track.metadata }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="span8" style="float:right;">
+                        <table class="submit-table" id="declined-table">
+                            <tr>
+                                <th colspan="2" class="mainhead">Latest declined songs</th>
+                            </tr>
+                            <tr>
+                                <th>Song</th>
+                                <th width="120px">Reason</th>
+                            </tr>
+                            {% for decline in declined %}
+                                <tr>
+                                    <td>{{ decline.songs.track.metadata }}</td>
+                                    <td>{{ decline.decline_reason }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div id="submit_info" class="fade modal" style="display: none;" data-backdrop="true" data-keyboard="true">
+            <div class="modal-header">
+                <a class="close" href="#">×</a>
+                <h3>Submit</h3>
+            </div>
+            <div class="modal-body">
+            
+            </div>
+        </div>
+{% endblock content %}

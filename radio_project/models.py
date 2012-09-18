@@ -79,6 +79,11 @@ class Album(models.Model):
         return self.name
         
 class Collection(models.Model):
+    PENDING = 0
+    ACCEPTED = 1
+    DECLINED = 2
+    REPLACEMENT = 3
+    
     id = models.AutoField(primary_key=True)
     songs = models.ForeignKey(Songs)
     usable = models.IntegerField()
