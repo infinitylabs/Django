@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..search import Searcher
 from ..models import Track
+from ..api import Api
 
 lastplayed = """SELECT MAX(played.time) FROM played JOIN songs ON
                 songs.id = played.songs_id JOIN track AS inner_tracks 
@@ -17,6 +18,7 @@ def get_content(request):
     query = request.GET.get('query', u'')
     page = request.GET.get('page', 1)
     with Searcher() as searcher:
+        query = query + u" NOT kind:track" # Alter query to include only database entries
         # Make a whoosh query
         wquery = searcher.parse(query)
         # Call whoosh, hold on to the QuerySet we need to add extras
@@ -40,8 +42,8 @@ def index(request):
                "runtime": runtime}
     return render_to_response("default/search.html", context,
                               context_instance=RequestContext(request))
-@jsonp
-@json_wrap({Track: ["metadata", "lastplayed", "lastrequested"]})
+    
+@Api(default="jsonp", serialize_hint={Track: ["metadata", "lastplayed", "lastrequested"]})
 def api(request):
     page, runtime = get_content(request)
     return [runtime, [page]]

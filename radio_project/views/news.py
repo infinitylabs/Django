@@ -5,6 +5,7 @@ from django.template.context import RequestContext
 from captcha.fields import ReCaptchaField
 from django.conf import settings
 from django.forms.fields import CharField
+from ..api import Api
 
 class NewsCommentForm(forms.ModelForm):
     captcha = ReCaptchaField()
@@ -64,5 +65,6 @@ def index(request):
                                "comments": comments},
                               context_instance=RequestContext(request))
 
+@Api(default="jsonp")
 def api(request):
     pass

@@ -62,81 +62,85 @@ def index(request):
         if formset.is_valid():
             if canupload or check_daypass(formset.cleaned_data["daypass"]):
                 file = formset.files['track']
-                filename = file.temporary_file_path()
-                # Get our info from mutagen
-                mediafile = mutagen.File(filename, easy=True)
-                if isinstance(mediafile, FLAC):
-                    if file.size > 7.34e+7:
-                        uploadmessage = u"Uploaded file too large."
-                elif isinstance(mediafile, (MP3, OggVorbis)):
-                    if file.size > 15728640:
-                        uploadmessage = u"Uploaded file too large."
+                try:
+                    filename = file.temporary_file_path()
+                except AttributeError:
+                    uploadmessage = u"Please poke someone on IRC about error code 5000."
                 else:
-                    # Fuck off, we don't want your kind here!
-                    uploadmessage = u"Uploaded file was of unsupported format."
-            
-                # Are we still okay?
-                if not uploadmessage:
-                    # Wow you actually got all the way here!
-                    # Merge artist and track
-                    album = " ,".join(mediafile.get('album', u''))
-                    artist = " ,".join(mediafile.get('artist', u''))
-                    title = " ,".join(mediafile.get('title', u''))
-                    if artist:
-                        metadata = artist + u" - " + title
+                    # Get our info from mutagen
+                    mediafile = mutagen.File(filename, easy=True)
+                    if isinstance(mediafile, FLAC):
+                        if file.size > 7.34e+7:
+                            uploadmessage = u"Uploaded file too large."
+                    elif isinstance(mediafile, (MP3, OggVorbis)):
+                        if file.size > 15728640:
+                            uploadmessage = u"Uploaded file too large."
                     else:
-                        metadata = title
-                    # Create or get our track object
-                    track, created = Track.objects.get_or_create(metadata=metadata,
-                                  defaults={'length': int(mediafile.info.length)})
-                    if not created:
-                        track.save()
-                    else:
-                        track.length = int(mediafile.info.length)
-                        track.save()
-                    
-                    # Handle album entry
-                    if album:
-                        album, created = Album.objects.get_or_create(name=album)
+                        # Fuck off, we don't want your kind here!
+                        uploadmessage = u"Uploaded file was of unsupported format."
+                
+                    # Are we still okay?
+                    if not uploadmessage:
+                        # Wow you actually got all the way here!
+                        # Merge artist and track
+                        album = " ,".join(mediafile.get('album', u''))
+                        artist = " ,".join(mediafile.get('artist', u''))
+                        title = " ,".join(mediafile.get('title', u''))
+                        if artist:
+                            metadata = artist + u" - " + title
+                        else:
+                            metadata = title
+                        # Create or get our track object
+                        track, created = Track.objects.get_or_create(metadata=metadata,
+                                      defaults={'length': int(mediafile.info.length)})
                         if not created:
-                            album.save()
-                        TrackHasAlbum(track=track, album=album).save()
+                            track.save()
+                        else:
+                            track.length = int(mediafile.info.length)
+                            track.save()
                         
+                        # Handle album entry
+                        if album:
+                            album, created = Album.objects.get_or_create(name=album)
+                            if not created:
+                                album.save()
+                            TrackHasAlbum(track=track, album=album).save()
+                            
+                            
+                        # Get our song object
+                        songs, created = Songs.objects.get_or_create(hash=track.hash,
+                                                           track=track)
+                        if not created:
+                            songs.save()
                         
-                    # Get our song object
-                    songs, created = Songs.objects.get_or_create(hash=track.hash,
-                                                       track=track)
-                    if not created:
-                        songs.save()
-                    
-                    final_filename = get_filename(file)
-                    
-                    collection, created = Collection.objects.get_or_create(songs=songs,
-                                defaults={'usable': 0,
-                                          'filename': final_filename,
-                                          'good_upload': 0,
-                                          'need_reupload': 0,
-                                          'popularity': 0,
-                                          'status': Collection.PENDING,
-                                          'comment': formset.cleaned_data['comment'],
-                                          'original_filename': file.name})
-                    # 
-                    listener, created = Listeners.objects.get_or_create(ip=client_ip,
-                                defaults={'last_seen': datetime.now(),
-                                          'banned': 0})
-                    if not created:
-                        listener.last_seen = datetime.now()
-                    listener.save()
+                        final_filename = get_filename(file)
                         
-                    upload_entry = Uploads(listeners=listener,
-                                           collection=collection,
-                                           time=datetime.now())
-                    upload_entry.save()
-                    
-                    with open(final_filename, "wb+") as destination:
-                        for chunk in file.chunks():
-                            destination.write(chunk)
-                    uploadmessage = u"Thank you for your upload."
+                        collection, created = Collection.objects.get_or_create(songs=songs,
+                                    defaults={'usable': 0,
+                                              'filename': final_filename,
+                                              'good_upload': 0,
+                                              'need_reupload': 0,
+                                              'popularity': 0,
+                                              'status': Collection.PENDING,
+                                              'comment': formset.cleaned_data['comment'],
+                                              'original_filename': file.name})
+                        # 
+                        listener, created = Listeners.objects.get_or_create(ip=client_ip,
+                                    defaults={'last_seen': datetime.now(),
+                                              'banned': 0})
+                        if not created:
+                            listener.last_seen = datetime.now()
+                        listener.save()
+                            
+                        upload_entry = Uploads(listeners=listener,
+                                               collection=collection,
+                                               time=datetime.now())
+                        upload_entry.save()
+                        
+                        with open(final_filename, "wb+") as destination:
+                            for chunk in file.chunks():
+                                destination.write(chunk)
+                        uploadmessage = u"Thank you for your upload."
         else:
             uploadmessage = u"How about actually uploading a file?"
     else:

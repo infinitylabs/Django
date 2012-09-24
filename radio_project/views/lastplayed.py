@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from ..tools import Paginator, Link, jsonp, json_wrap
 from ..models import Played, Songs
+from ..api import Api
 from django.template.context import RequestContext
 
 def get_content(request):
@@ -22,8 +23,7 @@ def index(request):
                                "base_template": base_template,
                                "page": page},
                               context_instance=RequestContext(request))
-@jsonp
-@json_wrap()
+@Api(default="jsonp")
 def api(request):
     return get_content(request)['objects']
     

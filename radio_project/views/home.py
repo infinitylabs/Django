@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..models import Streamstatus, Played, Queue, News, Radvars
 from ..tools import json_wrap, jsonp
+from ..api import Api
 
 def get_content(request, context):
     # Now playing info, Listeners info, DJ info
@@ -43,8 +44,7 @@ def index(request):
     return render_to_response("default/home.html", context,
                               context_instance=RequestContext(request))
     
-@jsonp
-@json_wrap({News: ["id", "time", "title", "text"]})
+@Api(default='jsonp')
 def api(request):
     return get_content(request, {})
     

@@ -26,6 +26,8 @@ class Djs(models.Model):
         return self.name
         
 class News(models.Model):
+    serialize_hint = ['id', 'time', 'title', 'text']
+    
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=45)
     time = models.DateTimeField()
@@ -177,7 +179,7 @@ class Faves(models.Model):
         return str(self.id)
         
 class Played(models.Model):
-    json_hint = {"time": "time",
+    serialize_hint = {"time": "time",
                  "track": "songs__track__metadata",
                  "playcount": "songs__played_set__count!",
                  "favecount": "songs__faves_set__count!"}
@@ -192,7 +194,7 @@ class Played(models.Model):
         return str(self.id)
         
 class Queue(models.Model):
-    json_hint = {"time": "time",
+    serialize_hint = {"time": "time",
                  "track": "songs__track__metadata"}
     
     id = models.AutoField(primary_key=True)

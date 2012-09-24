@@ -6,6 +6,8 @@ from whoosh.filedb.filestore import FileStorage
 from whoosh.qparser import QueryParser, WildcardPlugin
 from django.db.models import Q
 
+# TODO sort order isn't by relevance, change it
+
 class Writer(object):
     """Simple writer context manager, uses the BufferedWriter for
     better performance"""

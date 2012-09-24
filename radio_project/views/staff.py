@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from ..models import Djs
 from ..tools import jsonp, json_wrap
+from ..api import Api
 
 def index(request):
     base_template = "default/barebone.html" if \
@@ -13,8 +14,7 @@ def index(request):
                                "base_template": base_template},
                               context_instance=RequestContext(request))
     
-@jsonp
-@json_wrap
+@Api(default="jsonp")
 def api(request):
     return [{"name": i.name,
             "description": i.description,
