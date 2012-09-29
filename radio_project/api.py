@@ -58,7 +58,6 @@ class Api(object):
                 encoder = self.supported_apis.get(type, self.default)
                 encoder_result = encoder(request, data, self.info)
                 if not isinstance(encoder_result, HttpResponse):
-                    print "HELLO", type(encoder_result)
                     return HttpResponse(encoder_result) # Wrap it if it didn't return a response
                 else:
                     return encoder_result # For when the encoder makes a response
@@ -71,7 +70,7 @@ def register(name):
         @wraps(f)
         def wrapped_function(*args, **kwargs):
             return f(*args, **kwargs)
-        Api.supported_apis[name] = wrapped_function
+        Api.supported_apis[name.lower()] = wrapped_function
         return wrapped_function
     return register_wrap
 
