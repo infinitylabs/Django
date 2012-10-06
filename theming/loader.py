@@ -27,7 +27,7 @@ class ThemeLoader(BaseLoader):
                     theme = Theme.objects.get(name="default")
             for template in theme.files_set.filter(type__type='te'):
                 print "And we are in here", filename, template.filename
-                if template.filename == filename:
+                if template.filename.strip('/') == filename.strip('/'):
                     # Good we found our template do your shit
                     with open(template.filepath, 'r') as f:
                         print "Why did this fail again"

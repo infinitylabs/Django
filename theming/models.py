@@ -7,10 +7,12 @@ class Theme(models.Model):
     name = models.CharField(max_length=100, help_text="Name of the Theme")
     live = models.BooleanField(default=True, help_text="Theme usable in live environment.")
     location = models.TextField(blank=False, help_text="Theme root on the filesystem.")
-    current = models.BooleanField(default=False, help_text="Is this the theme we are using?")
-    extends = models.ForeignKey('Theme', blank=True, null=True)
+    current = models.BooleanField(default=False, help_text="Denotes if this is the active theme.")
+    inherits = models.ManyToManyField('self', blank=True,
+                                    null=True, symmetrical=False)
+    
     def append(self, filename, type):
-        file = Files(theme=self, filename=filename, type=type)
+        file = Files(theme=self, filename=filename.strip('/'), type=type)
         file.save()
         
     def extend(self, files):
@@ -75,7 +77,7 @@ class Files(models.Model):
     @property
     def relative_filename(self):
         if self.type.directory:
-            return os.path.join(self.type.directory, self.filename)
+            return os.path.join(self.type.directory, os.path.basename(self.filename))
         else:
             return self.filename
         
