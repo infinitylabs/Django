@@ -1,6 +1,9 @@
 from functools import wraps
 from django.http import HttpResponse
 
+class Clean(object):
+    passphrase = "hello world" # it really isn't a password
+
 class Api(object):
     """Api class that supports multiple output formats, the default is JSONP
     that is included in this file, by default also includes a JSON encoder
@@ -54,8 +57,12 @@ class Api(object):
         def api_wrapper(request, *args, **kwargs):
             data = f(request, *args, **kwargs)
             type = request.GET.get("type", self.default)
-            if not isinstance(data, HttpResponse):
-                encoder = self.supported_apis.get(type, self.default)
+            if hasattr(type, 'passphrase'):
+                return data
+            elif not isinstance(data, HttpResponse):
+                encoder = self.supported_apis.get(type, self.supported_apis.get(self.default, None))
+                if encoder is None:
+                    return data # No type? return data
                 encoder_result = encoder(request, data, self.info)
                 if not isinstance(encoder_result, HttpResponse):
                     return HttpResponse(encoder_result) # Wrap it if it didn't return a response
