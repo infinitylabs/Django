@@ -16,9 +16,9 @@ class NewsCommentForm(forms.ModelForm):
         fields = ('nickname', 'text', 'mail', 'captcha')
 
 def index(request):
-    base_template = "default/barebone.html" if \
+    base_template = "<theme>barebone.html" if \
                     request.GET.get("barebone", False) else \
-                    "default/base.html"
+                    "<theme>base.html"
     nid = request.GET.get("nid", None)
     formset = None
     if nid:
@@ -34,12 +34,12 @@ def index(request):
                 else:
                     instance.poster = None
                 instance.save()
-                return render_to_response("default/redir.html",
+                return render_to_response("<theme>redir.html",
                                           {'redir_time':5,
                                            'redir_url':'/news/?nid=' + nid,
                                            'redir_text': 'Thank you for your comment.'},
                                           context_instance=RequestContext(request))
-            return render_to_response("default/redir.html",
+            return render_to_response("<theme>redir.html",
                                       {'redir_time':5,
                                        'redir_url':'/news/?nid=' + nid,
                                        'redir_text': 'An error occurred when posting the comment.'},
@@ -58,7 +58,7 @@ def index(request):
     else:
         news = News.objects.order_by("-time").all()[:10]
         comments = None
-    return render_to_response("default/news.html",
+    return render_to_response("<theme>news.html",
                               {"base_template": base_template,
                                "formset": formset,
                                "news": news,

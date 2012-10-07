@@ -1,7 +1,7 @@
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.fields import FileField
-from ..models import Collection, Songs, Radvars, Uploads, Track, Album, Listeners, TrackHasAlbum
+from ..models import Collection, Songs, Radvars, Uploads, Tracks, Album, Listeners, TrackHasAlbum
 from ..tools import get_filename
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
@@ -38,9 +38,9 @@ class SubmitForm(forms.Form):
     replace = MultiChoice()
     
 def index(request):
-    base_template = "default/barebone.html" if \
+    base_template = "<theme>barebone.html" if \
                     request.GET.get("barebone", False) else \
-                    "default/base.html"
+                    "<theme>base.html"
     formset = None
     uploadmessage = False
     canupload = True
@@ -91,7 +91,7 @@ def index(request):
                         else:
                             metadata = title
                         # Create or get our track object
-                        track, created = Track.objects.get_or_create(metadata=metadata,
+                        track, created = Tracks.objects.get_or_create(metadata=metadata,
                                       defaults={'length': int(mediafile.info.length)})
                         if not created:
                             track.save()
@@ -151,7 +151,7 @@ def index(request):
                                          collectioneditors__action="accept").order_by("-collectioneditors__time")[:50]
     if not uploadmessage:
         uploadmessage = u"Welcome to the submit page, read the instructions below."
-    return render_to_response("default/submit.html",
+    return render_to_response("<theme>submit.html",
                               {"base_template": base_template,
                                "formset": formset,
                                "declined": declined,

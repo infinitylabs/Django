@@ -1,8 +1,8 @@
-from ..tools import Paginator, jsonp, json_wrap
+from ..tools import Paginator
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..search import Searcher
-from ..models import Track
+from ..models import Tracks
 from ..api import Api
 
 lastplayed = """SELECT MAX(played.time) FROM played JOIN songs ON
@@ -32,18 +32,18 @@ def get_content(request):
     return paginator.get_context(page), runtime
 
 def index(request):
-    base_template = "default/barebone.html" if \
-        request.GET.get("barebone", False) else \
-        "default/base.html"
+    base_template = "<theme>barebone.html" if \
+                    request.GET.get("barebone", False) else \
+                    "<theme>base.html"
     page, runtime = get_content(request)
     context = {"page": page,
                "results": page['objects'],
                "base_template": base_template,
                "runtime": runtime}
-    return render_to_response("default/search.html", context,
+    return render_to_response("<theme>search.html", context,
                               context_instance=RequestContext(request))
     
-@Api(default="jsonp", serialize_hint={Track: ["metadata", "lastplayed", "lastrequested"]})
+@Api(default="jsonp", serialize_hint={Tracks: ["metadata", "lastplayed", "lastrequested"]})
 def api(request):
     page, runtime = get_content(request)
     return [runtime, [page]]
