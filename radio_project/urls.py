@@ -53,3 +53,7 @@ urlpatterns += patterns('radio_project.views.request',
 urlpatterns += patterns('radio_project.views.relay',
     url(r"^api/relay/$", "api"),
     )
+
+urlpatterns += patterns('radio_project.views.all',
+    url(r"^api/all/$", "api"),
+    )
