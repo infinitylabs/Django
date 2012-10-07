@@ -72,11 +72,14 @@ class Api(object):
                 return data # For when the original view returns a response
         return api_wrapper
     
-def register(name):
+def register(name, content_type=None):
     def register_wrap(f):
         @wraps(f)
         def wrapped_function(*args, **kwargs):
-            return f(*args, **kwargs)
+            data = f(*args, **kwargs)
+            if content_type:
+                return HttpResponse(data, content_type=content_type)
+            return data
         Api.supported_apis[name.lower()] = wrapped_function
         return wrapped_function
     return register_wrap
@@ -125,23 +128,21 @@ class JSONEncoder(json.JSONEncoder):
         else:
             super(JSONEncoder, self).default(o)
             
-@register(name="json")
+@register(name="json", content_type=u"application/json; charset=utf-8")
 def json_api(request, data, info):
     data = JSONEncoder(info).encode(data)
-    return HttpResponse(data, content_type=u"application/json; charset=utf-8")
+    return data
 
-@register(name="jsonp")
+@register(name="jsonp", content_type=u'text/javascript; charset=utf-8')
 def jsonp_api(request, data, info):
     data = JSONEncoder(info).encode(data) # Encode our data to JSON
     
-    resp = HttpResponse(data) # Make response object so we can add headers
-
+     # Make response object so we can add headers
     # Wrap into callback, brackets and apply headers
     if 'callback' in request.GET:
         callback= request.GET['callback']
-        resp['Content-Type'] = 'text/javascript; charset=utf-8'
-        resp.content = "%s(%s)" % (callback, resp.content)
-        return resp
+        return "{:s}({:s})".format(callback, data)
     else:
+        resp = HttpResponse(data)
         resp['Content-Type'] = "application/json; charset=utf-8"
         return resp
