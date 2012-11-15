@@ -1,7 +1,7 @@
 import settings
 import re
 from . import create_index, get_index, WHOOSH_SCHEMA
-from .models import Track, CollectionHasTags, TrackHasAlbum, Collection, Songs, Album, Tags
+from .models import Track, CollectionHasTags, TrackHasAlbum, Collection, Song, Album, Tag
 from whoosh.filedb.filestore import FileStorage
 from whoosh.qparser import QueryParser, WildcardPlugin
 from django.db.models import Q
@@ -70,9 +70,9 @@ class Searcher(object):
                 QuerySet that uses Track. supported types are:
                     'track': The default
                     'collection': Uses Collection
-                    'songs': Uses Songs*
+                    'songs': Uses Song*
                     'album': Uses Album*
-                    'tag': Uses Tags*
+                    'tag': Uses Tag*
                     
                     *: Can return more or less objects than search results due to
                     linking.
@@ -130,7 +130,7 @@ class Searcher(object):
 def map_tags(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(collectionhastags__collection__songs__track__in=tracks) | Q(collectionhastags__collection__id__in=tags)
-    return Tags.objects.filter(query)
+    return Tag.objects.filter(query)
 
 @mapper(kind="album")
 def map_album(tracks, tags, albums):
@@ -142,7 +142,7 @@ def map_album(tracks, tags, albums):
 def map_songs(tracks, tags, albums):
     tracks = tracks+albums
     query = Q(track__id__in=tracks) | Q(collection__id__in=tags)
-    return Songs.objects.filter(query)
+    return Song.objects.filter(query)
 
 @mapper(kind="collection")
 def map_collection(tracks, tags, albums):

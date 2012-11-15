@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from ..tools import Paginator, Link
-from ..models import Played, Songs
+from ..models import Played, Song
 from ..api import Api
 from django.template.context import RequestContext
 

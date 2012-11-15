@@ -1,7 +1,7 @@
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.fields import FileField
-from ..models import Collection, Songs, Radvars, Uploads, Tracks, Album, Listeners, TrackHasAlbum
+from ..models import Collection, Song, Radvar, Upload, Track, Album, Listener, TrackHasAlbum
 from ..tools import get_filename
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
@@ -20,7 +20,7 @@ submitmessage = """<p>You can only upload one song every hour. The song also has
 
 def check_daypass(daypass):
     try:
-        return Radvars.objects.get(name="daypass") == daypass
+        return Radvar.objects.get(name="daypass") == daypass
     except:
         return False
 
@@ -49,7 +49,7 @@ def index(request):
         uploadmessage = u"You don't have an IP address?"
     else:
         time_threshold = datetime.now() - timedelta(hours=1)
-        recent_uploads = [upload.collection.songs.track.metadata for upload in Uploads.objects.filter(listeners__ip=client_ip,
+        recent_uploads = [upload.collection.songs.track.metadata for upload in Upload.objects.filter(listeners__ip=client_ip,
                                time__gt=time_threshold)]
         if recent_uploads:
             # You already uploaded something!
@@ -91,7 +91,7 @@ def index(request):
                         else:
                             metadata = title
                         # Create or get our track object
-                        track, created = Tracks.objects.get_or_create(metadata=metadata,
+                        track, created = Track.objects.get_or_create(metadata=metadata,
                                       defaults={'length': int(mediafile.info.length)})
                         if not created:
                             track.save()
@@ -108,7 +108,7 @@ def index(request):
                             
                             
                         # Get our song object
-                        songs, created = Songs.objects.get_or_create(hash=track.hash,
+                        songs, created = Song.objects.get_or_create(hash=track.hash,
                                                            track=track)
                         if not created:
                             songs.save()
@@ -125,14 +125,14 @@ def index(request):
                                               'comment': formset.cleaned_data['comment'],
                                               'original_filename': file.name})
                         # 
-                        listener, created = Listeners.objects.get_or_create(ip=client_ip,
+                        listener, created = Listener.objects.get_or_create(ip=client_ip,
                                     defaults={'last_seen': datetime.now(),
                                               'banned': 0})
                         if not created:
                             listener.last_seen = datetime.now()
                         listener.save()
                             
-                        upload_entry = Uploads(listeners=listener,
+                        upload_entry = Upload(listeners=listener,
                                                collection=collection,
                                                time=datetime.now())
                         upload_entry.save()

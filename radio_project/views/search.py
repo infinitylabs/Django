@@ -2,7 +2,7 @@ from ..tools import Paginator
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from ..search import Searcher
-from ..models import Tracks
+from ..models import Track
 from ..api import Api
 
 lastplayed = """SELECT MAX(played.time) FROM played JOIN songs ON
@@ -43,7 +43,7 @@ def index(request):
     return render_to_response("<theme>search.html", context,
                               context_instance=RequestContext(request))
     
-@Api(default="jsonp", serialize_hint={Tracks: ["metadata", "lastplayed", "lastrequested"]})
+@Api(default="jsonp", serialize_hint={Track: ["metadata", "lastplayed", "lastrequested"]})
 def api(request):
     page, runtime = get_content(request)
     return [runtime, [page]]

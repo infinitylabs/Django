@@ -89,7 +89,7 @@ def move_data(host, port, username, password, old_db):
                 links.append((User.objects.get(username=user).id, djid))
                 
             # Dummy entry
-            new_cur.execute("""INSERT INTO djs (id, name, description, 
+            new_cur.execute("""INSERT INTO dj (id, name, description, 
                 visible, priority, user, theme) VALUES (%s, %s,
                 %s, %s, %s, %s, %s);""", (0, 'Unknown', 'Unknown',
                                           False, 0,
@@ -103,7 +103,7 @@ def move_data(host, port, username, password, old_db):
                 
                 # Put info into new djs table 
                 for name, description, image, visible, priority in old_cur:
-                    new_cur.execute("""INSERT INTO djs (id, name, description, 
+                    new_cur.execute("""INSERT INTO dj (id, name, description, 
                     visible, priority, user, theme) VALUES (%s, %s,
                     %s, %s, %s, %s, %s);""", (djid, name, description,
                                               visible, priority,
@@ -142,7 +142,7 @@ def move_data(host, port, username, password, old_db):
                     for poster, in new_cur:
                         old_data.append((nid, header, text, mail, poster, time))
             # lovely query
-            query = """INSERT INTO news_comments (news_id, nickname,
+            query = """INSERT INTO news_comment (news_id, nickname,
             text, mail, poster, time) VALUES (%s, %s, %s, %s, %s, %s);"""
             
             # execute, done
@@ -153,7 +153,7 @@ def move_data(host, port, username, password, old_db):
     with Cursor(options_old, cursortype=cursors.Cursor) as old_cur:
         with Cursor(options_new, cursortype=cursors.Cursor) as new_cur:
             old_cur.execute("SELECT * FROM relays;")
-            query = """INSERT INTO relays (id, relay_name, relay_owner,
+            query = """INSERT INTO relay (id, relay_name, relay_owner,
             base_name, port, mount, bitrate, format, listeners, listener_limit,
             active, admin_auth) VALUES (%s, %s, %s, %s, %s, %s,
              %s, %s, %s, %s, %s, %s);"""
@@ -170,7 +170,7 @@ def move_data(host, port, username, password, old_db):
             players = []
             for ip, lastset, player in old_data:
                 players.append((useragent_to_player(player), player))
-            query = """INSERT INTO players (name, useragent) VALUES (%s, %s)
+            query = """INSERT INTO player (name, useragent) VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE name=VALUES(name);"""
             for play in players:
                 try:
@@ -181,12 +181,12 @@ def move_data(host, port, username, password, old_db):
             # prepare iterator for listener
             listeners = []
             for ip, lastset, player in old_data:
-                new_cur.execute("SELECT id FROM players WHERE useragent=%s;", (player[:200],))
+                new_cur.execute("SELECT id FROM player WHERE useragent=%s;", (player[:200],))
                 for row, in new_cur:
                     player = row
                 listeners.append((ip, player, 0, lastset, None))
             # Prepare query
-            query = """INSERT INTO listeners (ip, player_id, banned,
+            query = """INSERT INTO listener (ip, player_id, banned,
             last_seen, nicknames_id) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE
             KEY UPDATE last_seen=VALUES(last_seen);"""
             # Add all of them to listeners
@@ -206,25 +206,25 @@ def move_data(host, port, username, password, old_db):
             old_cur.execute("SELECT nick, authcode FROM enick;")
             
             # Add fake hostname
-            hostname, created = Hostnames.objects.get_or_create(hostname='Fake')
+            hostname, created = Hostname.objects.get_or_create(hostname='Fake')
             
             # prepare iterator
             for nick, passcode in old_cur:
-                nickname = Nicknames.objects.create(hostname=hostname,
+                nickname = Nickname.objects.create(hostname=hostname,
                                                              passcode=passcode)
                 alias, created = NicknameAlias.objects.get_or_create(name=nick,
                                                                  nickname=nickname)
             
     # The fun starts
     def add_track(meta, length=0):
-        return Tracks.factory.create_from_string(meta, length=length)
+        return Track.factory.create_from_string(meta, length=length)
 
     def add_album(album):
-        album, created = Albums.objects.get_or_create(name=album)
+        album, created = Album.objects.get_or_create(name=album)
         return album
 
     def add_song(metadata, track):
-        return Songs.factory.create_from_string(metadata, track=track)
+        return Song.factory.create_from_string(metadata, track=track)
     
     def link_track_album(tid, aid):
         link, created = TrackHasAlbum.objects.get_or_create(track=tid,
@@ -232,10 +232,10 @@ def move_data(host, port, username, password, old_db):
         return link
     
     def get_dj(username):
-        return Djs.objects.get(user__username=username)
+        return Dj.objects.get(user__username=username)
         
     def get_nick(nick):
-        return Nicknames.objects.get(names__name=nick)
+        return Nickname.objects.get(names__name=nick)
         
     def add_collection(track=None, **kwargs):
         collection, created = Collection.objects.get_or_create(track=track,
@@ -243,26 +243,26 @@ def move_data(host, port, username, password, old_db):
         return collection
 
     def add_editor(collection, user, action, time=None):
-        editor = CollectionEditors.objects.create(user=user,
+        editor = CollectionEditor.objects.create(user=user,
                                                            action=action,
                                                            collection=collection,
                                                            time=time)
         return editor
     
     def add_tag(tag):
-        tag, created = Tags.objects.get_or_create(name=tag)
+        tag, created = Tag.objects.get_or_create(name=tag)
         return tag
     
     def link_track_tag(track, tag):
-        tag, created = TrackHasTags.objects.get_or_create(track=track, tag=tag)
+        tag, created = TrackHasTag.objects.get_or_create(track=track, tag=tag)
         
     def add_listener(ip=None, **kwargs):
-        listener, created = Listeners.objects.get_or_create(ip=ip,
+        listener, created = Listener.objects.get_or_create(ip=ip,
                                                             defaults=kwargs)
         return listener
     
     def add_uploads(listener, time, collection):
-        upload = Uploads.objects.create(listener=listener,
+        upload = Upload.objects.create(listener=listener,
                                                  time=time,
                                                  collection=collection)
         return upload
@@ -274,7 +274,7 @@ def move_data(host, port, username, password, old_db):
         return played
 
     def add_fave(song, nickname):
-        fave, created = Faves.objects.get_or_create(song=song,
+        fave, created = Fave.objects.get_or_create(song=song,
                                              nickname=nickname)
         return fave
     

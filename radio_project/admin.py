@@ -1,6 +1,6 @@
 from django.contrib import admin
 from radio_project import models as m
 
-class DjsAdmin(admin.ModelAdmin):
+class DjAdmin(admin.ModelAdmin):
     pass
-admin.site.register(m.Djs, DjsAdmin)
+admin.site.register(m.Dj, DjAdmin)

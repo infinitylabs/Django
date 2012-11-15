@@ -34,10 +34,10 @@ class BaseManager(models.Manager):
                 raise TypeError("Entry of type '{:s}' is not supported.".format(repr(type(entry))))
         return entries
     
-class TracksManager(BaseManager):
+class TrackManager(BaseManager):
     @transaction.commit_on_success
     def create_from_string(self, string, length=0):
-        """Creates a Tracks entry from a single string in the format
+        """Creates a Track entry from a single string in the format
         'artist - title'. Will use an advanced splitter at a later point.
         (haha good checkpoint for doc editing here)"""
         # TODO: Update to advanced analyzer
@@ -45,14 +45,14 @@ class TracksManager(BaseManager):
         parser.analyzers = []
         result = parser.parse()[0]
         
-        artists = Artists.factory.from_list([{'names': [result.raw_artist]}])
+        artists = Artist.factory.from_list([{'names': [result.raw_artist]}])
         track = self.create(title=result.raw_title, length=0)
         for index, artist in enumerate(artists):
             TrackHasArtist.objects.create(track=track, artist=artist,
                                           index=index, seperator=u'')
         return track
         
-class SongsManager(BaseManager):
+class SongManager(BaseManager):
     @transaction.commit_on_success
     def create_from_string(self, string, track):
         import hashlib
@@ -62,7 +62,7 @@ class SongsManager(BaseManager):
                                            defaults={'track': track})
         return song
     
-class ArtistsManager(BaseManager):
+class ArtistManager(BaseManager):
     @transaction.commit_on_success
     def from_list(self, entry_list):
         """Creates multiple objects with the entry_list. 
@@ -96,7 +96,7 @@ class RadioUser(User):
     Might not be permanent if good alternative is found.
     """
     google_token = models.TextField(null=True)
-    nickname = models.ForeignKey('Nicknames',
+    nickname = models.ForeignKey('Nickname',
                                  help_text="Nickname used for favorite saving.",
                                  null=True)
     
@@ -104,7 +104,7 @@ class RadioUser(User):
     class Meta:
         db_table = 'radio_user'
         
-class Djs(models.Model):
+class Dj(models.Model):
     """
     This table is used to save DJ specific information about an user.
     
@@ -125,7 +125,7 @@ class Djs(models.Model):
     def image(self):
         pass
     class Meta:
-        db_table = u'djs'
+        db_table = u'dj'
     def __unicode__(self):
         return self.name
         
@@ -147,7 +147,7 @@ class News(models.Model):
     def __unicode__(self):
         return self.title
         
-class NewsComments(models.Model):
+class NewsComment(models.Model):
     """
     This table is used for comments on news posts. No special gotchas
     
@@ -161,18 +161,18 @@ class NewsComments(models.Model):
                                help_text="The user account of the author. Can be NULL.")
     time = models.DateTimeField(help_text="The time this comment was posted.")
     class Meta:
-        db_table = u'news_comments'
+        db_table = u'news_comment'
     def __unicode__(self):
         return self.poster
         
-class Tracks(models.Model):
+class Track(models.Model):
     """Center of the database. Needs more documentation."""
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, help_text="Title of the track.")
     length = models.IntegerField(null=True, blank=True, help_text="Length of the track.")
     
     objects = models.Manager()
-    factory = TracksManager()
+    factory = TrackManager()
     @property
     def metadata(self):
         return u"{:s} - {:s}".format(self._join_artists(), self.title)
@@ -187,7 +187,7 @@ class Tracks(models.Model):
     
     def get_artists(self):
         """Returns the artists of this track with the 'through' Model attributes
-        annotated to it. Thus returning `Artists` objects with `index` and 
+        annotated to it. Thus returning `Artist` objects with `index` and 
         `seperator` attributes."""
         artists = []
         for obj in self.trackhasartist_set.all().order_by('index').select_related('artist'):
@@ -198,7 +198,7 @@ class Tracks(models.Model):
         return artists
     
     def get_albums(self):
-        """Does same as `get_artists` except does it for `Albums`"""
+        """Does same as `get_artists` except does it for `Album`"""
         albums = []
         for obj in self.trackhasalbum_set.all().select_related('album'):
             album = obj.album
@@ -206,7 +206,7 @@ class Tracks(models.Model):
         return albums
     
     def get_tags(self):
-        """Does same as `get_artists` except does it for `Tags`"""
+        """Does same as `get_artists` except does it for `Tag`"""
         tags = []
         for obj in self.trackhastags_set.all().select_related('tags'):
             tag = obj.tags
@@ -214,46 +214,47 @@ class Tracks(models.Model):
         return tags
     
     def get_faves(self):
-        return Faves.objects.filter(song__track=self)
+        return Fave.objects.filter(song__track=self)
     
     class Meta:
-        db_table = u'tracks'
+        db_table = u'track'
     def __unicode__(self):
         return self.metadata
 
-class Songs(models.Model):
+class Song(models.Model):
     """
-    A `Songs` entry is the identifier for a track. An explanation.
+    A `Song` entry is the identifier for a track. An explanation.
     
     When a track is played, we receive the metadata from icecast as a single
-    string. This string is processed and turned into a `Tracks` entry later on.
+    string. This string is processed and turned into a `Track` entry later on.
     
     The string mentioned is not saved at all in this table. But instead is
     transformed with the SHA1 hash algorithm and saved.
     
-    A `Songs` entry defines the string before it is turned into a `Tracks`
+    A `Song` entry defines the string before it is turned into a `Track`
     entry. This process is used because we need a way to identify this same
     metadata string if it is used at a later time.
     
-    As a rule of thumb you should think of the `Songs` entry as the identifier
-    and the `Tracks` entry as metadata or information about said identifier.
+    As a rule of thumb you should think of the `Song` entry as the identifier
+    and the `Track` entry as metadata or information about said identifier.
     """
     hash = models.CharField(unique=True, max_length=45, help_text="SHA1 hash of the metadata string identifier.")
-    track = models.ForeignKey(Tracks, help_text="Information entry about this identifier.")
+    repair_priority = models.IntegerField(default=1, help_text="The priority for tag repair; 0 means no repair at all.")
+    track = models.ForeignKey(Track, help_text="Information entry about this identifier.")
     
     objects = models.Manager()
-    factory = SongsManager()
+    factory = SongManager()
     
     class Meta:
-        db_table = u'songs'
+        db_table = u'song'
     def __unicode__(self):
         return self.hash
         
-class Albums(models.Model):
+class Album(models.Model):
     name = models.CharField(unique=True, max_length=200, blank=True, help_text="Album name")
-    tracks = models.ManyToManyField(Tracks, through="TrackHasAlbum")
+    tracks = models.ManyToManyField(Track, through="TrackHasAlbum")
     class Meta:
-        db_table = u'albums'
+        db_table = u'album'
     def __unicode__(self):
         return self.name
         
@@ -263,7 +264,7 @@ class Collection(models.Model):
     DECLINED = 2
     REPLACEMENT = 3
 
-    track = models.ForeignKey(Tracks, unique=True)
+    track = models.ForeignKey(Track, unique=True)
     usable = models.IntegerField(default=0, help_text="Can we use this entry in the AFK Streamer?")
     filename = models.TextField(blank=True, help_text="The filename of the track.")
     good_upload = models.BooleanField(default=False, 
@@ -285,92 +286,92 @@ class Collection(models.Model):
     class Meta:
         db_table = u'collection'
 
-class CollectionEditors(models.Model):
+class CollectionEditor(models.Model):
     user = models.ForeignKey(User)
     action = models.CharField(max_length=45, blank=True)
     time = models.DateTimeField(null=True, blank=True, db_index=True)
     collection = models.ForeignKey(Collection)
     class Meta:
-        db_table = u'collection_editors'
+        db_table = u'collection_editor'
         
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(unique=True, max_length=100, blank=True)
-    tracks = models.ManyToManyField(Tracks, through='TrackHasTags')
+    tracks = models.ManyToManyField(Track, through='TrackHasTag')
     class Meta:
-        db_table = u'tags'
+        db_table = u'tag'
     def __unicode__(self):
         return self.name
         
-class TrackHasTags(models.Model):
-    tag = models.ForeignKey(Tags)
-    track = models.ForeignKey(Tracks)
+class TrackHasTag(models.Model):
+    tag = models.ForeignKey(Tag)
+    track = models.ForeignKey(Track)
     class Meta:
-        db_table = u'track_has_tags'
+        db_table = u'track_has_tag'
         unique_together = ('tag', 'track')
         
-class Hostnames(models.Model):
+class Hostname(models.Model):
     hostname = models.CharField(max_length=150, help_text="IRC Hostname.")
     class Meta:
-        db_table = u'hostnames'
+        db_table = u'hostname'
     def __unicode__(self):
         return self.hostname
         
-class Nicknames(models.Model):
+class Nickname(models.Model):
     passcode = models.CharField(max_length=8, null=True, help_text="A small passcode used for website/nickname linking.")
-    hostname = models.ForeignKey(Hostnames, help_text="Pointer to hostname entry")
+    hostname = models.ForeignKey(Hostname, help_text="Pointer to hostname entry")
     class Meta:
-        db_table = u'nicknames'
+        db_table = u'nickname'
     def __unicode__(self):
-        return "nicknames"
+        return "nickname"
         
 class NicknameAlias(models.Model):
     name = models.CharField(unique=True, max_length=30, help_text="Nickname on IRC.")
-    nickname = models.ForeignKey(Nicknames, related_name="names")
+    nickname = models.ForeignKey(Nickname, related_name="names")
     class Meta:
         db_table = u'nickname_alias'
         
-class Players(models.Model):
+class Player(models.Model):
     name = models.CharField(max_length=45, null=True, help_text="Name of this audio player.")
     useragent = models.CharField(unique=True, max_length=200, blank=True, help_text="User agent of this audio player.")
     class Meta:
-        db_table = u'players'
+        db_table = u'player'
     def __unicode__(self):
         return self.name
         
-class Listeners(models.Model):
+class Listener(models.Model):
     ip = models.CharField(unique=True, max_length=50, blank=True, help_text="IP Address of this listener.")
-    player = models.ForeignKey(Players, null=True, blank=True, help_text="What audio player did this listener last use.")
+    player = models.ForeignKey(Player, null=True, blank=True, help_text="What audio player did this listener last use.")
     banned = models.IntegerField(default=0, help_text="Is this listener banned from our service?")
     last_seen = models.DateTimeField(help_text="Time we last saw this listener.")
-    nicknames = models.ForeignKey(Nicknames, null=True, blank=True, help_text="The IRC nickname of this user. Can be NULL.")
+    nicknames = models.ForeignKey(Nickname, null=True, blank=True, help_text="The IRC nickname of this user. Can be NULL.")
     class Meta:
-        db_table = u'listeners'
+        db_table = u'listener'
     def __unicode__(self):
         return self.ip
         
-class CurrentListeners(models.Model):
-    listeners = models.ForeignKey(Listeners)
+class CurrentListener(models.Model):
+    listeners = models.ForeignKey(Listener)
     class Meta:
-        db_table = u'current_listeners'
+        db_table = u'current_listener'
 
-class Faves(models.Model):
+class Fave(models.Model):
     time = models.DateTimeField(null=True, blank=True, db_index=True,
                                 help_text="When was this favorite entry created.")
-    song = models.ForeignKey(Songs, help_text="Pointer to the track identifier.")
-    nickname = models.ForeignKey(Nicknames, help_text="What nickname is this favorite owned by.")
+    song = models.ForeignKey(Song, help_text="Pointer to the track identifier.")
+    nickname = models.ForeignKey(Nickname, help_text="What nickname is this favorite owned by.")
     class Meta:
-        db_table = u'faves'
+        db_table = u'fave'
         unique_together = ('nickname', 'song')
     def __unicode__(self):
         return str(self.id)
         
-class DJFaves(models.Model):
+class DJFave(models.Model):
     time = models.DateTimeField(null=True, blank=True, db_index=True,
                                 help_text="When was this favorite entry created.")
-    dj = models.ForeignKey(Djs, help_text="Pointer to the DJ entry.")
-    nicknames = models.ForeignKey(Nicknames, help_text="What nickname is this favorite owned by.")
+    dj = models.ForeignKey(Dj, help_text="Pointer to the DJ entry.")
+    nicknames = models.ForeignKey(Nickname, help_text="What nickname is this favorite owned by.")
     class Meta:
-        db_table = u'dj_faves'
+        db_table = u'dj_fave'
         unique_together = ('nicknames', 'dj')
     def __unicode__(self):
         return "DJ faves"
@@ -383,8 +384,8 @@ class Played(models.Model):
     
     time = models.DateTimeField(null=True, blank=True, db_index=True,
                                 help_text="Time this track played.")
-    song = models.ForeignKey(Songs, help_text="Song identifier.")
-    dj = models.ForeignKey(Djs, help_text="Which DJ streamed played this.")
+    song = models.ForeignKey(Song, help_text="Song identifier.")
+    dj = models.ForeignKey(Dj, help_text="Which DJ streamed played this.")
     class Meta:
         db_table = u'played'
     def __unicode__(self):
@@ -395,15 +396,15 @@ class Queue(models.Model):
                  "track": "track__metadata"}
     
     type = models.IntegerField(null=True, blank=True, help_text="Is this a request or a normal entry.")
-    track = models.ForeignKey(Tracks, help_text="Track identifier.")
+    track = models.ForeignKey(Track, help_text="Track identifier.")
     time = models.DateTimeField(db_index=True, help_text="The estimated time this queue entry should be played.")
-    dj = models.ForeignKey(Djs, help_text="Which DJ does this queue belong to.")
+    dj = models.ForeignKey(Dj, help_text="Which DJ does this queue belong to.")
     class Meta:
         db_table = u'queue'
     def __unicode__(self):
         return str(self.id)
         
-class Relays(models.Model):
+class Relay(models.Model):
     relay_name = models.CharField(max_length=200,
                                   help_text="Public name we use for this relay.")
     relay_owner = models.CharField(max_length=200,
@@ -422,16 +423,16 @@ class Relays(models.Model):
     admin_auth = models.CharField(max_length=200,
                         help_text="The admin panel password for this relay.")
     class Meta:
-        db_table = u'relays'
+        db_table = u'relay'
     def __unicode__(self):
         return self.relay_name
         
-class Requests(models.Model):
+class Request(models.Model):
     time = models.DateTimeField(db_index=True, null=True, blank=True,
                                 help_text="The time this got requested.")
-    track = models.ForeignKey(Tracks, help_text="The track that got requested.")
-    listeners = models.ForeignKey(Listeners, help_text="The requesters IP. Filled when website request.")
-    hostnames = models.ForeignKey(Hostnames, help_text="The requesters hostname. Filled when IRC request.")
+    track = models.ForeignKey(Track, help_text="The track that got requested.")
+    listeners = models.ForeignKey(Listener, help_text="The requesters IP. Filled when website request.")
+    hostnames = models.ForeignKey(Hostname, help_text="The requesters hostname. Filled when IRC request.")
     class Meta:
         db_table = u'requests'
     def __unicode__(self):
@@ -442,28 +443,28 @@ class Streamstatus(models.Model):
     listener_count = models.IntegerField(null=True, blank=True)
     start_time = models.BigIntegerField(null=True, blank=True)
     end_time = models.BigIntegerField(null=True, blank=True)
-    track = models.ForeignKey(Tracks)
-    dj = models.ForeignKey(Djs)
+    track = models.ForeignKey(Track)
+    dj = models.ForeignKey(Dj)
     class Meta:
         db_table = u'streamstatus'
     def __unicode__(self):
         return str(self.id)
         
 class TrackHasAlbum(models.Model):
-    track = models.ForeignKey(Tracks, primary_key=True)
-    album = models.ForeignKey(Albums)
+    track = models.ForeignKey(Track, primary_key=True)
+    album = models.ForeignKey(Album)
     class Meta:
         db_table = u'track_has_album'
         unique_together = ('track', 'album')
         
-class Artists(models.Model):
-    track = models.ManyToManyField(Tracks, through='TrackHasArtist', null=True,
+class Artist(models.Model):
+    track = models.ManyToManyField(Track, through='TrackHasArtist', null=True,
                                    related_name='artist')
     mbid = models.CharField(db_index=True, max_length=36, null=True,
                             help_text="The MusicBrainz identifier of this artist.")
     
     objects = models.Manager()
-    factory = ArtistsManager()
+    factory = ArtistManager()
     class Meta:
         db_table = u'artist'
     def get_aliases(self):
@@ -479,8 +480,8 @@ class Artists(models.Model):
         return self.get_aliases()
     
 class TrackHasArtist(models.Model):
-    track = models.ForeignKey(Tracks, primary_key=True)
-    artist = models.ForeignKey(Artists)
+    track = models.ForeignKey(Track, primary_key=True)
+    artist = models.ForeignKey(Artist)
     index = models.IntegerField(help_text="Index in the artist string. Lower is further to the front.")
     seperator = models.CharField(max_length=20, default='', help_text="The seperator used when multiple artist are present. Defaults to empty string.")
     class Meta:
@@ -489,37 +490,37 @@ class TrackHasArtist(models.Model):
         
 class ArtistHasAlias(models.Model):
     primary = models.BooleanField(help_text="Is this the primary name of this artist?")
-    artist = models.ForeignKey('Artists')
+    artist = models.ForeignKey('Artist')
     alias = models.ForeignKey('ArtistAlias')
     class Meta:
         unique_together = ("artist", "alias")
         db_table = 'artist_has_alias'
         
 class ArtistAlias(models.Model):
-    artist = models.ManyToManyField('Artists', through='ArtistHasAlias', related_name='names')
+    artist = models.ManyToManyField('Artist', through='ArtistHasAlias', related_name='names')
     name = models.CharField(max_length=200, null=False, help_text="Name of the artist.")
     class Meta:
         db_table = u'artist_alias'
     def __unicode__(self):
         return self.name
     
-class Uploads(models.Model):
-    listener = models.ForeignKey(Listeners, help_text="The IP of the uploader.")
+class Upload(models.Model):
+    listener = models.ForeignKey(Listener, help_text="The IP of the uploader.")
     time = models.DateTimeField(db_index=True, null=True, blank=True,
                                 help_text="The time of upload.")
     collection = models.ForeignKey(Collection, help_text="Collection pointer.")
     class Meta:
-        db_table = u'uploads'
+        db_table = u'upload'
     def __unicode__(self):
         return str(self.id)
 
-class Radvars(models.Model):
+class Radvar(models.Model):
     """A table used for database based variables. Should be used for variables
     that should be shared across multiple applications but don't warrant their
     own table in the database."""
     name = models.CharField(max_length=100, unique=True, help_text="Name of the variable.")
     value = models.CharField(max_length=200, help_text="Value of the variable.")
     class Meta:
-        db_table = u'radvars'
+        db_table = u'radvar'
     def __unicode__(self):
         return "{:s}:{:s}".format(self.name, self.value)

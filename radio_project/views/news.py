@@ -1,5 +1,5 @@
 from django import forms
-from ..models import NewsComments, News, User
+from ..models import NewsComment, News, User
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from captcha.fields import ReCaptchaField
@@ -12,7 +12,7 @@ class NewsCommentForm(forms.ModelForm):
     nickname = CharField(initial=u'Anonymous', max_length=100)
     text = CharField(required=True, error_messages={'required':u'You need to enter a comment'}, widget = forms.widgets.Textarea())
     class Meta:
-        model = NewsComments
+        model = NewsComment
         fields = ('nickname', 'text', 'mail', 'captcha')
 
 def index(request):
@@ -51,7 +51,7 @@ def index(request):
             #formset.captcha = captcha
             try:
                 news = [News.objects.get(pk=nid)]
-                comments = NewsComments.objects.filter(news=nid).order_by('-time')
+                comments = NewsComment.objects.filter(news=nid).order_by('-time')
             except News.DoesNotExist:
                 news = None
                 comments = []

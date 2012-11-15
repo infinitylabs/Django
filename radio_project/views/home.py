@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from ..models import Streamstatus, Played, Queue, News, Radvars
+from ..models import Streamstatus, Played, Queue, News, Radvar
 from ..api import Api
 
 class NP(object):
@@ -50,8 +50,8 @@ def get_content(request, context):
     context["queue"] = Queue.objects.all().select_related("song", "song__track").order_by("time")[:5]
     # Thread info
     try:
-        thread = Radvars.objects.get(name=u'curthread').value
-    except Radvars.DoesNotExist:
+        thread = Radvar.objects.get(name=u'curthread').value
+    except Radvar.DoesNotExist:
         thread = None
     finally:
         if thread and u'http://' not in thread:
