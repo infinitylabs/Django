@@ -154,9 +154,9 @@ def move_data(host, port, username, password, old_db):
         with Cursor(options_new, cursortype=cursors.Cursor) as new_cur:
             old_cur.execute("SELECT * FROM relays;")
             query = """INSERT INTO relay (id, relay_name, relay_owner,
-            base_name, port, mount, bitrate, format, listeners, listener_limit,
-            active, admin_auth) VALUES (%s, %s, %s, %s, %s, %s,
-             %s, %s, %s, %s, %s, %s);"""
+            base_name, port, mount, bitrate, format, priority, listeners,
+            listener_limit, active, admin_auth) VALUES (%s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, %s, %s);"""
             new_cur.executemany(query, old_cur)
             
     # Playerstats

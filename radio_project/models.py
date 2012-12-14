@@ -416,6 +416,7 @@ class Relay(models.Model):
     bitrate = models.IntegerField(help_text="The bitrate this mountpoint sends out.")
     format = models.CharField(max_length=15,
                               help_text="The format this mountpoint sends out.")
+    priority = models.IntegerField(help_text="The priority of the relay; between 1 and 1000.")
     listeners = models.IntegerField(help_text="The amount of listeners on this relay.")
     listener_limit = models.IntegerField(null=True, blank=True,
                         help_text="The maximum amount of listeners on this relay.")
