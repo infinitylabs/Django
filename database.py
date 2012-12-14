@@ -156,7 +156,7 @@ def move_data(host, port, username, password, old_db):
             query = """INSERT INTO relay (id, relay_name, relay_owner,
             base_name, port, mount, bitrate, format, priority, listeners,
             listener_limit, active, admin_auth) VALUES (%s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s);"""
+            %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
             new_cur.executemany(query, old_cur)
             
     # Playerstats
@@ -176,7 +176,7 @@ def move_data(host, port, username, password, old_db):
                 try:
                     new_cur.execute(query, play)
                 except:
-                    play = (play[0], play[0][:200])
+                    play = (play[0], play[1][:200])
                     new_cur.execute(query, play)
             # prepare iterator for listener
             listeners = []

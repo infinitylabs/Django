@@ -6,7 +6,7 @@ from django.conf import settings
 from whoosh import store, fields, index
 from whoosh.filedb.filestore import FileStorage
 from whoosh.writing import BufferedWriter
-from radio_project.models import Track, CollectionHasTags, TrackHasAlbum
+from radio_project.models import Track, TrackHasTag, TrackHasAlbum
 
 """
     Schema format:
@@ -55,7 +55,7 @@ def get_index():
         storage = FileStorage(settings.WHOOSH_INDEX)
         return storage.open_index(indexname="search")
     
-@receiver(post_syncdb)
+#@receiver(post_syncdb)
 def create_index(sender=None, **kwargs):
     """Creates a File based whoosh index, location used is
     settings.WHOOSH_INDEX so make sure that is set"""
@@ -65,11 +65,11 @@ def create_index(sender=None, **kwargs):
         ix = storage.create_index(schema=WHOOSH_SCHEMA,
                                   indexname="search")
 
-@receiver(post_save, sender=Track)
+#@receiver(post_save, sender=Track)
 def update_index_track(sender, instance, created, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
-        if Track.objects.filter(songs__collection__isnull=False,
+        if Track.objects.filter(song__collection__isnull=False,
                                 id=instance.id):
             kind = u"collection"
         else:
@@ -83,7 +83,7 @@ def update_index_track(sender, instance, created, **kwargs):
                                    content=instance.metadata,
                                 link=u"t {:d}".format(instance.id))
     
-@receiver(post_save, sender=CollectionHasTags)
+#@receiver(post_save, sender=TrackHasTag)
 def update_index_tag(sender, instance, created, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
@@ -96,7 +96,7 @@ def update_index_tag(sender, instance, created, **kwargs):
                                 content=instance.tags.name,
                                 link=u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
 
-@receiver(post_save, sender=TrackHasAlbum)
+#@receiver(post_save, sender=TrackHasAlbum)
 def update_index_album(sender, instance, created, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
@@ -109,19 +109,19 @@ def update_index_album(sender, instance, created, **kwargs):
                                 content=instance.album.name,
                                 link=u"a {:d} {:d}".format(instance.album_id, instance.track_id))
             
-@receiver(pre_delete, sender=Track)
+#@receiver(pre_delete, sender=Track)
 def delete_index_track(sender, instance, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
         writer.delete_by_term("link", u"t {:d}".format(instance.id))
         
-@receiver(pre_delete, sender=CollectionHasTags)
+#@receiver(pre_delete, sender=TrackHasTag)
 def delete_index_tag(sender, instance, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
         writer.delete_by_term("link", u"g {:d} {:d}".format(instance.tags_id, instance.collection_id))
         
-@receiver(pre_delete, sender=TrackHasAlbum)
+#@receiver(pre_delete, sender=TrackHasAlbum)
 def delete_index_album(sender, instance, **kwargs):
     ix = get_index()
     with ix.writer() as writer:
