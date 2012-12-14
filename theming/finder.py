@@ -1,6 +1,6 @@
 from django.contrib.staticfiles.finders import BaseFinder
 from django.core.files.storage import FileSystemStorage
-from models import Theme, Types, Files
+from models import Theme
 import os.path
 from django.utils.datastructures import SortedDict
 
@@ -20,15 +20,22 @@ class StaticFinder(BaseFinder):
                 
     def find(self, path, all=False):
         matches = []
-        for file in Files.objects.filter(type__type='st'):
-            filename = file.relative_filename
-            print filename
-            if os.path.abspath(filename) == os.path.abspath(path):
-                if not all:
-                    return self.storages[file.theme].path(filename)
-                matches.append(self.storages[file.theme].path(filename))
+        for theme in Theme.objects.all():
+            root_path = theme.location
+            for name, dirs, files in os.walk(root_path):
+                for file in [f for f in files if not f.endswith('.tmpl')]:
+                    if os.path.abspath(os.path.join(name, file)) == os.path.abspath(path):
+                        if not all:
+                            return self.storages[theme].path(file)
+                        matches.append(self.storages[theme].path(file))
         return matches
-                
+        
     def list(self, ignore_patterns):
-        for file in Files.objects.filter(type__type='st'):
-            yield (file.relative_filename, self.storages[file.theme])
+        for theme in Theme.objects.all():
+            root_path = theme.location
+            for name, dirs, files in os.walk(root_path):
+                for file in self.filter_dynamic(files):
+                    yield (os.path.join(name, file).lstrip(root_path), self.storages[theme])
+
+    def filter_dynamic(self, files):
+        return [f for f in files if not f.endswith('.tmpl')]
